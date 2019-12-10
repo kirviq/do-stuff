@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<title>Getting Started: Serving Web Content</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}" />
+		<script type="text/javascript" th:src="@{/js/week.js}"></script>
+	</head>
+	<body>
+		<div class="grid">
+			<div class="cell week">
+				<span th:text="${week.number}"></span>
+			</div>
+			<div th:each="day : ${days}" class="cell day">
+				<div th:text="${day.day}"></div>
+				<div th:each="type : ${types}" class="day-row">
+					<div class="add-column">
+						<button type="button" class="do-button" th:attr="data-date=${day.day}, data-type=${type.name}" >
+							<img th:src="@{${type.icon}}" class="event-image" width="64" height="64" />
+							<img th:src="@{/img/add.svg}" class="button-modifier" width="64" height="64" />
+						</button>
+					</div>
+					<div class="event-column">
+						<button th:each="event : ${day.events[type.name]}" type="button" class="do-button" th:attr="data-event-id=${event.id}" >
+							<img th:src="@{${type.icon}}" class="event-image" width="64" height="64" />
+							<img th:src="@{/img/remove.svg}" class="button-modifier" width="64" height="64" />
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<form id="adder" method="post" class="forms" th:action="@{/add-event}">
+			<input type="hidden" name="type" />
+			<input type="hidden" name="date" />
+		</form>
+		<form id="remover" method="post" class="forms" th:action="@{/remove-event}">
+			<input type="hidden" name="id" />
+		</form>
+		<div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+	</body>
+</html>

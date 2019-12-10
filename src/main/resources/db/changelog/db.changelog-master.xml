@@ -1,0 +1,68 @@
+<databaseChangeLog
+		xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+	<changeSet author="joachim" id="someUniqueId-1234">
+		<createTable tableName="types">
+			<column name="name" type="VARCHAR(255)"><constraints primaryKey="true" /></column>
+			<column name="renderer" type="VARCHAR(255)" defaultValue="default"/>
+			<column name="icon" type="VARCHAR(255)" />
+			<column name="color" type="VARCHAR(255)" defaultValue="silver"/>
+			<column name="background_color" type="VARCHAR(255)" defaultValue="black"/>
+		</createTable>
+		<createTable tableName="events">
+			<column autoIncrement="true" name="id" type="BIGINT">
+				<constraints primaryKey="true" />
+			</column>
+			<column name="type_name" type="VARCHAR(255)">
+				<constraints nullable="false" />
+			</column>
+			<column name="timestamp" type="TIMESTAMP">
+				<constraints nullable="false" />
+			</column>
+			<column name="float_value_1" type="DOUBLE" />
+			<column name="float_value_2" type="DOUBLE" />
+			<column name="float_value_3" type="DOUBLE" />
+			<column name="float_value_4" type="DOUBLE" />
+			<column name="float_value_5" type="DOUBLE" />
+			<column name="string_value_1" type="VARCHAR(255)" />
+		</createTable>
+		<createIndex tableName="events" indexName="events_by_date">
+			<column name="timestamp"></column>
+		</createIndex>
+		<addForeignKeyConstraint baseTableName="events" baseColumnNames="type_name" constraintName="events_need_a_type"
+		                         referencedTableName="types" referencedColumnNames="name" />
+
+		<insert tableName="types">
+			<column name="name" value="vegetables" />
+			<column name="icon" value="/img/broccoli.svg" />
+		</insert>
+
+		<insert tableName="types">
+			<column name="name" value="carbs" />
+			<column name="icon" value="/img/potato.svg" />
+		</insert>
+
+		<insert tableName="types">
+			<column name="name" value="meat" />
+			<column name="icon" value="/img/steak.svg" />
+		</insert>
+
+		<insert tableName="types">
+			<column name="name" value="sin" />
+			<column name="icon" value="/img/sorbet.svg" />
+		</insert>
+
+		<insert tableName="types">
+			<column name="name" value="meds" />
+			<column name="icon" value="/img/pills.svg" />
+		</insert>
+
+		<insert tableName="types">
+			<column name="name" value="move" />
+			<column name="icon" value="/img/relaxing-walk.svg" />
+		</insert>
+	</changeSet>
+
+</databaseChangeLog>

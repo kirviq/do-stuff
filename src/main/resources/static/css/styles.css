@@ -1,0 +1,42 @@
+body {
+	padding: 0;
+	background-color: black;
+	color: silver;
+}
+.grid{
+	display: grid;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	grid-template-columns: 1fr 1fr;
+}
+.cell {
+	border: 1px dashed darkgray;
+	background: black;
+}
+.forms {
+	display: none;
+}
+.do-button {
+	border: none;
+	padding: 0;
+	position: relative;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+}
+.do-button .event-icon {
+
+}
+.do-button .button-modifier {
+	position: absolute;
+	top: 0;
+	right: 0;
+	opacity: .6;
+}
+
+.day-row {
+	display: flex;
+}
