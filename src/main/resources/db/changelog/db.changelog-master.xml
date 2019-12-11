@@ -4,13 +4,23 @@
 		xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
 	<changeSet author="joachim" id="someUniqueId-1234">
-		<createTable tableName="types">
+		<createTable tableName="event_groups">
 			<column name="name" type="VARCHAR(255)"><constraints primaryKey="true" /></column>
-			<column name="renderer" type="VARCHAR(255)" defaultValue="default"/>
 			<column name="icon" type="VARCHAR(255)" />
 			<column name="color" type="VARCHAR(255)" defaultValue="silver"/>
 			<column name="background_color" type="VARCHAR(255)" defaultValue="black"/>
 		</createTable>
+
+		<createTable tableName="types">
+			<column name="name" type="VARCHAR(255)"><constraints primaryKey="true" /></column>
+			<column name="group_name" type="VARCHAR(255)" />
+			<column name="icon" type="VARCHAR(255)" />
+			<column name="color" type="VARCHAR(255)" defaultValue="silver"/>
+			<column name="background_color" type="VARCHAR(255)" defaultValue="black"/>
+		</createTable>
+		<addForeignKeyConstraint baseTableName="types" baseColumnNames="group_name" constraintName="types_need_a_group"
+		                         referencedTableName="event_groups" referencedColumnNames="name" />
+
 		<createTable tableName="events">
 			<column autoIncrement="true" name="id" type="BIGINT">
 				<constraints primaryKey="true" />
@@ -34,33 +44,56 @@
 		<addForeignKeyConstraint baseTableName="events" baseColumnNames="type_name" constraintName="events_need_a_type"
 		                         referencedTableName="types" referencedColumnNames="name" />
 
+		<insert tableName="event_groups">
+			<column name="name" value="food" />
+			<column name="icon" value="/img/spoon-and-fork-crossed.svg" />
+		</insert>
+
 		<insert tableName="types">
 			<column name="name" value="vegetables" />
+			<column name="group_name" value="food" />
 			<column name="icon" value="/img/broccoli.svg" />
 		</insert>
 
 		<insert tableName="types">
 			<column name="name" value="carbs" />
+			<column name="group_name" value="food" />
 			<column name="icon" value="/img/potato.svg" />
 		</insert>
 
 		<insert tableName="types">
 			<column name="name" value="meat" />
+			<column name="group_name" value="food" />
 			<column name="icon" value="/img/steak.svg" />
 		</insert>
 
 		<insert tableName="types">
 			<column name="name" value="sin" />
+			<column name="group_name" value="food" />
 			<column name="icon" value="/img/sorbet.svg" />
 		</insert>
 
-		<insert tableName="types">
+
+		<insert tableName="event_groups">
 			<column name="name" value="meds" />
 			<column name="icon" value="/img/pills.svg" />
 		</insert>
 
 		<insert tableName="types">
+			<column name="name" value="meds" />
+			<column name="group_name" value="meds" />
+			<column name="icon" value="/img/pills.svg" />
+		</insert>
+
+
+		<insert tableName="event_groups">
+			<column name="name" value="activities" />
+			<column name="icon" value="/img/relaxing-walk.svg" />
+		</insert>
+
+		<insert tableName="types">
 			<column name="name" value="move" />
+			<column name="group_name" value="activities" />
 			<column name="icon" value="/img/relaxing-walk.svg" />
 		</insert>
 	</changeSet>

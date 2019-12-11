@@ -1,3 +1,4 @@
+
 (function() {
 	function getDataFromButton(el) {
 		while (el.tagName != 'BUTTON') {
@@ -14,25 +15,13 @@
 			}
 		});
 	}
-	function addStuff(event) {
+	function showForm(event) {
 		const data = getDataFromButton(event.target);
-		const form = document.getElementById('adder');
-		form['type'].value = data.type;
-		form['date'].value = data.date;
-		form.submit();
-	}
-	function deleteStuff(event) {
-		const data = getDataFromButton(event.target);
-		const form = document.getElementById('remover');
-		form['id'].value = data.eventId;
-		form.submit();
+		document.getElementById(data.formId).style.display = 'block';
 	}
 	addEventListener('DOMContentLoaded', () => {
-		Array.prototype.forEach.call(document.querySelectorAll('.add-column .do-button'), button => {
-			button.addEventListener('click', addStuff, false);
-		});
-		Array.prototype.forEach.call(document.querySelectorAll('.event-column .do-button'), button => {
-			button.addEventListener('click', deleteStuff, false);
+		Array.prototype.forEach.call(document.querySelectorAll('.add-column .add-multiple-button'), button => {
+			button.addEventListener('click', showForm, false);
 		});
 	});
 })();

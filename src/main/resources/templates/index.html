@@ -12,19 +12,40 @@
 				<span th:text="${week.number}"></span>
 			</div>
 			<div th:each="day : ${days}" class="cell day">
-				<div th:text="${day.day}"></div>
-				<div th:each="type : ${types}" class="day-row">
+				<div th:text="${day.date}"></div>
+				<div th:each="group : ${groups}" class="day-row">
 					<div class="add-column">
-						<button type="button" class="do-button" th:attr="data-date=${day.day}, data-type=${type.name}" >
-							<img th:src="@{${type.icon}}" class="event-image" width="64" height="64" />
-							<img th:src="@{/img/add.svg}" class="button-modifier" width="64" height="64" />
-						</button>
+						<div th:if="${group.types.size() > 1}">
+							<!-- TODO implement -->
+							<button type="button" class="do-button add-multiple-button" th:data-form-id="${'add_event_' + day.date + '_' + group.name}">
+								<img th:src="@{${group.icon}}" class="event-image" width="64" height="64" />
+								<img th:src="@{/img/add.svg}" class="button-modifier" width="64" height="64" />
+							</button>
+							<form method="post" th:action="@{/add-event}" class="add-form" th:id="${'add_event_' + day.date + '_' + group.name}">
+								<input th:if="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="day" th:value="${day.date}" />
+								<button th:each="type: ${group.types}" type="submit" name="type" th:value="${type.name}" class="do-button">
+									<img th:src="@{${type.icon}}" class="event-image" width="64" height="64" />
+								</button>
+							</form>
+						</div>
+						<div th:if="${group.types.size() == 1}">
+							<form method="post" th:action="@{/add-event}">
+								<input type="hidden" name="type" th:value="${group.types[0].name}" />
+								<input th:if="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="day" th:value="${day.date}" />
+								<button type="submit" class="do-button">
+									<img th:src="@{${group.icon}}" class="event-image" width="64" height="64" />
+									<img th:src="@{/img/add.svg}" class="button-modifier" width="64" height="64" />
+								</button>
+							</form>
+						</div>
 					</div>
 					<div class="event-column">
-						<button th:each="event : ${day.events[type.name]}" type="button" class="do-button" th:attr="data-event-id=${event.id}" >
-							<img th:src="@{${type.icon}}" class="event-image" width="64" height="64" />
-							<img th:src="@{/img/remove.svg}" class="button-modifier" width="64" height="64" />
-						</button>
+						<form method="post" th:action="@{/remove-event}">
+							<button th:each="event : ${day.events[group.name]}" type="submit" class="do-button" name="id" th:value="${event.id}" >
+								<img th:src="@{${event.type.icon}}" class="event-image" width="64" height="64" />
+								<img th:src="@{/img/remove.svg}" class="button-modifier" width="64" height="64" />
+							</button>
+						</form>
 					</div>
 				</div>
 			</div>

@@ -14,7 +14,7 @@ public class EventData {
 	private long id;
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "type_name")
-	private TypeEntity type;
+	private EventType type;
 	@Column(name = "float_value_1")
 	private double floatValue1;
 	@Column(name = "float_value_2")

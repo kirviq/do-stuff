@@ -2,18 +2,16 @@ package com.github.kirviq.dostuff;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Data
 @Entity
 @Table(name = "types")
-public class TypeEntity {
+public class EventType {
 	@Id
 	private String name;
-	private String renderer;
+	@ManyToOne
+	private EventGroup group;
 	private String icon;
 	private String color;
 	@Column(name = "background_color")

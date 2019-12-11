@@ -3,6 +3,21 @@ body {
 	background-color: black;
 	color: silver;
 }
+form {
+	margin: 0;
+	padding: 0;
+}
+.add-form {
+	display: none;
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	padding: 30px;
+	background-color: #000000D0;
+	z-index: 10000;
+}
 .grid{
 	display: grid;
 	position: fixed;
@@ -40,3 +55,4 @@ body {
 .day-row {
 	display: flex;
 }
+
