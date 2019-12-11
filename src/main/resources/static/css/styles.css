@@ -27,6 +27,9 @@ form {
 	bottom: 0;
 	grid-template-columns: 1fr 1fr;
 }
+.add-column {
+	border-right: green dashed 2px;
+}
 .cell {
 	border: 1px dashed darkgray;
 	background: black;
@@ -50,9 +53,12 @@ form {
 	top: 0;
 	right: 0;
 	opacity: .6;
+	display: none;
+}
+.do-button:hover .button-modifier {
+	display: block;
 }
 
 .day-row {
 	display: flex;
 }
-
