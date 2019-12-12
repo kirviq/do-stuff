@@ -9,30 +9,30 @@
 	<body>
 		<div class="grid">
 			<div class="cell week">
-				<span th:text="${week.number}"></span>
+				Week <span th:text="${week.number}"></span> <br />
+				<span th:text="${#temporals.format(week.start, 'dd.MM.')}"></span> - <span th:text="${#temporals.format(week.end, 'dd.MM.')}"></span>
 			</div>
 			<div th:each="day : ${days}" class="cell day">
-				<div th:text="${day.date}"></div>
+				<div class="day-of-week" th:text="${#temporals.format(day.date, 'EEEE')}"></div>
 				<div th:each="group : ${groups}" class="day-row">
 					<div class="add-column">
 						<div th:if="${group.types.size() > 1}">
-							<!-- TODO implement -->
-							<button type="button" class="do-button add-multiple-button" th:data-form-id="${'add_event_' + day.date + '_' + group.name}">
+							<button type="button" class="do-button add-multiple-button" th:data-form-id="${'add_event_' + day.date + '_' + group.name}" th:style="${'border-color: ' + group.color + '; background-color: ' + group.backgroundColor}">
 								<img th:src="@{${group.icon}}" class="event-image" width="64" height="64" />
 								<img th:src="@{/img/add.svg}" class="button-modifier" width="32" height="32" />
 							</button>
 							<form method="post" th:action="@{/add-event}" class="add-form" th:id="${'add_event_' + day.date + '_' + group.name}">
-								<input th:if="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="day" th:value="${day.date}" />
-								<button th:each="type: ${group.types}" type="submit" name="type" th:value="${type.name}" class="do-button">
-									<img th:src="@{${type.icon}}" class="event-image" width="32" height="32" />
+								<input th:unless="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="date" th:value="${day.date}" />
+								<button th:each="type: ${group.types}" type="submit" name="type" th:value="${type.name}" class="do-button" th:style="${'border-color: ' + type.color + '; background-color: ' + type.backgroundColor}">
+									<img th:src="@{${type.icon}}" class="event-image" width="64" height="64" />
 								</button>
 							</form>
 						</div>
 						<div th:if="${group.types.size() == 1}">
 							<form method="post" th:action="@{/add-event}">
 								<input type="hidden" name="type" th:value="${group.types[0].name}" />
-								<input th:if="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="day" th:value="${day.date}" />
-								<button type="submit" class="do-button">
+								<input th:unless="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="date" th:value="${day.date}" />
+								<button type="submit" class="do-button" th:style="${'border-color: ' + group.color + '; background-color: ' + group.backgroundColor}">
 									<img th:src="@{${group.icon}}" class="event-image" width="64" height="64" />
 									<img th:src="@{/img/add.svg}" class="button-modifier" width="32" height="32" />
 								</button>
@@ -42,7 +42,7 @@
 					<div class="event-column">
 						<form method="post" th:action="@{/remove-event}">
 							<button th:each="event : ${day.events[group.name]}" type="submit" class="do-button" name="id" th:value="${event.id}" >
-								<img th:src="@{${event.type.icon}}" class="event-image" width="64" height="64" />
+								<img th:src="@{${event.type.icon}}" class="event-image" width="64" height="64" th:style="${'border-color: ' + event.type.color + '; background-color: ' + event.type.backgroundColor}"/>
 								<img th:src="@{/img/remove.svg}" class="button-modifier" width="32" height="32" />
 							</button>
 						</form>

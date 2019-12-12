@@ -17,7 +17,7 @@
 	}
 	function showForm(event) {
 		const data = getDataFromButton(event.target);
-		document.getElementById(data.formId).style.display = 'block';
+		document.getElementById(data.formId).className += ' visible';
 	}
 	addEventListener('DOMContentLoaded', () => {
 		Array.prototype.forEach.call(document.querySelectorAll('.add-column .add-multiple-button'), button => {

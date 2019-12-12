@@ -2,6 +2,7 @@ body {
 	padding: 0;
 	background-color: black;
 	color: silver;
+	font-size: 36px;
 }
 form {
 	margin: 0;
@@ -18,6 +19,17 @@ form {
 	background-color: #000000D0;
 	z-index: 10000;
 }
+.add-form.visible {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.add-form .do-button {
+	margin: 12px;
+	border: 3px solid transparent;
+	border-radius: 12px;
+
+}
 .grid{
 	display: grid;
 	position: fixed;
@@ -33,13 +45,17 @@ form {
 .cell {
 	border: 1px dashed darkgray;
 	background: black;
+	padding: 3px;
 }
 .forms {
 	display: none;
 }
+.day-of-week {
+}
 .do-button {
 	border: none;
 	padding: 0;
+	margin: 3px;
 	position: relative;
 	background: transparent;
 	color: inherit;
