@@ -10,7 +10,12 @@
 		<div class="grid">
 			<div class="cell week">
 				Week <span th:text="${week.number}"></span> <br />
-				<span th:text="${#temporals.format(week.start, 'dd.MM.')}"></span> - <span th:text="${#temporals.format(week.end, 'dd.MM.')}"></span>
+				<span th:text="${#temporals.format(week.start, 'dd.MM.')}"></span> - <span th:text="${#temporals.format(week.end, 'dd.MM.')}"></span> <br>
+				<ul>
+					<li th:each="stat : ${week.stats}">
+						<img th:src="@{${stat.type.icon}}" width="32" height="32" />: <span th:text="${stat.count}"></span>
+					</li>
+				</ul>
 			</div>
 			<div th:each="day : ${days}" class="cell day">
 				<div class="day-of-week" th:text="${#temporals.format(day.date, 'EEEE')}"></div>

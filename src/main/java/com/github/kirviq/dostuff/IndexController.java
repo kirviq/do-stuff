@@ -1,10 +1,7 @@
 package com.github.kirviq.dostuff;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.*;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.springframework.core.env.Environment;
@@ -22,6 +19,8 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Controller
@@ -39,19 +38,34 @@ public class IndexController {
 		if (weeksPast != null) {
 			start = start.minus(weeksPast, ChronoUnit.WEEKS);
 		}
-		Map<LocalDate, Multimap<String, EventData>> eventsThisWeek = new HashMap<>();
+		Map<LocalDate, Multimap<String, EventData>> eventsByDayAndType = new HashMap<>();
 		Instant startOfWeek = start.atStartOfDay().toInstant(EUROPE_BERLIN.getRules().getOffset(Instant.now()));
 		Instant endOfWeek = start.plusWeeks(1).atStartOfDay().toInstant(EUROPE_BERLIN.getRules().getOffset(Instant.now()));
-		for (EventData event : events.findEventsByTimestampBetweenOrderByTimestampAsc(startOfWeek, endOfWeek)) {
-			Multimap<String, EventData> eventsAtThatDay = eventsThisWeek.computeIfAbsent(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate(), day -> LinkedHashMultimap.create());
+		List<EventData> eventsThisWeek = events.findEventsByTimestampBetweenOrderByTimestampAsc(startOfWeek, endOfWeek);
+		for (EventData event : eventsThisWeek) {
+			Multimap<String, EventData> eventsAtThatDay = eventsByDayAndType.computeIfAbsent(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate(), day -> LinkedHashMultimap.create());
 			eventsAtThatDay.put(event.getType().getGroup().getName(), event);
 		}
-		model.addAttribute("week", new Week(start.get(ChronoField.ALIGNED_WEEK_OF_YEAR) + 1, start, start.plusDays(6)));
+		List<EventGroup> groups = Lists.newArrayList(this.groups.findAll());
+		model.addAttribute("groups", groups);
+
+		HashMultimap<String, EventData> eventsThisWeekByType = eventsThisWeek.stream()
+				.collect(Multimaps.toMultimap(event -> event.getType().getName(), Function.identity(), HashMultimap::create));
+		List<EventStats> stats = groups.stream()
+				.flatMap(group -> group.getTypes().stream())
+				.map(type -> new EventStats(
+						type,
+						Optional.ofNullable(eventsThisWeekByType.asMap().get(type.getName())).map(Collection::size).orElse(0)))
+				.collect(Collectors.toList());
+
+		model.addAttribute("week", new Week(
+				start.get(ChronoField.ALIGNED_WEEK_OF_YEAR) + 1,
+				start, start.plusDays(6),
+				stats));
 		model.addAttribute("days", IntStream.of(0, 1, 2, 3, 4, 5, 6)
 				.mapToObj(start::plusDays)
-				.map(date -> new Day(date, eventsThisWeek.computeIfAbsent(date, ignored -> HashMultimap.create()).asMap()))
+				.map(date -> new Day(date, eventsByDayAndType.computeIfAbsent(date, ignored -> HashMultimap.create()).asMap()))
 				.toArray());
-		model.addAttribute("groups", groups.findAll());
 		return "index";
 	}
 
@@ -81,6 +95,12 @@ public class IndexController {
 		int number;
 		LocalDate start;
 		LocalDate end;
+		List<EventStats> stats;
+	}
+	@Value
+	private static class EventStats {
+		EventType type;
+		int count;
 	}
 	@Value
 	private static class Day {
