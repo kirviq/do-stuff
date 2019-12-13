@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,7 +29,6 @@ public class IndexController {
 	private final EventDataRepository events;
 	private final EventTypeRepository types;
 	private final EventGroupRepository groups;
-	private final Environment env;
 
 	@GetMapping("/")
 	public String index(@RequestParam(required = false) Integer weeksPast, Model model) {

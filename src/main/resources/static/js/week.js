@@ -19,9 +19,19 @@
 		const data = getDataFromButton(event.target);
 		document.getElementById(data.formId).className += ' visible';
 	}
+	function hideForm(event) {
+		const form = event.target;
+		if (form.tagName != 'FORM') {
+			return;
+		}
+		form.className = form.className.replace(/visible/g, '');
+	}
 	addEventListener('DOMContentLoaded', () => {
 		Array.prototype.forEach.call(document.querySelectorAll('.add-column .add-multiple-button'), button => {
 			button.addEventListener('click', showForm, false);
+		});
+		Array.prototype.forEach.call(document.querySelectorAll('.add-form'), button => {
+			button.addEventListener('click', hideForm, false);
 		});
 	});
 })();

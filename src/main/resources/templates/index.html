@@ -1,10 +1,11 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:with="buttonSize=${T(java.lang.Integer).valueOf(@environment.getRequiredProperty('layout.button.size'))}">
 	<head>
 		<title>Getting Started: Serving Web Content</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}" />
 		<script type="text/javascript" th:src="@{/js/week.js}"></script>
+		<meta name="viewport" content="height = device-height, width = device-width" />
 	</head>
 	<body>
 		<div class="grid">
@@ -13,7 +14,7 @@
 				<span th:text="${#temporals.format(week.start, 'dd.MM.')}"></span> - <span th:text="${#temporals.format(week.end, 'dd.MM.')}"></span> <br>
 				<ul>
 					<li th:each="stat : ${week.stats}">
-						<img th:src="@{${stat.type.icon}}" width="32" height="32" />: <span th:text="${stat.count}"></span>
+						<img th:src="@{${stat.type.icon}}" th:width="${buttonSize}" th:height="${buttonSize}" />: <span th:text="${stat.count}"></span>
 					</li>
 				</ul>
 			</div>
@@ -23,13 +24,13 @@
 					<div class="add-column">
 						<div th:if="${group.types.size() > 1}">
 							<button type="button" class="do-button add-multiple-button" th:data-form-id="${'add_event_' + day.date + '_' + group.name}" th:style="${'border-color: ' + group.color + '; background-color: ' + group.backgroundColor}">
-								<img th:src="@{${group.icon}}" class="event-image" width="64" height="64" />
-								<img th:src="@{/img/add.svg}" class="button-modifier" width="32" height="32" />
+								<img th:src="@{${group.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" />
+								<img th:src="@{/img/add.svg}" class="button-modifier" th:width="${buttonSize / 2}" th:height="${buttonSize / 2}" />
 							</button>
 							<form method="post" th:action="@{/add-event}" class="add-form" th:id="${'add_event_' + day.date + '_' + group.name}">
 								<input th:unless="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="date" th:value="${day.date}" />
 								<button th:each="type: ${group.types}" type="submit" name="type" th:value="${type.name}" class="do-button" th:style="${'border-color: ' + type.color + '; background-color: ' + type.backgroundColor}">
-									<img th:src="@{${type.icon}}" class="event-image" width="64" height="64" />
+									<img th:src="@{${type.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" />
 								</button>
 							</form>
 						</div>
@@ -38,8 +39,8 @@
 								<input type="hidden" name="type" th:value="${group.types[0].name}" />
 								<input th:unless="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="date" th:value="${day.date}" />
 								<button type="submit" class="do-button" th:style="${'border-color: ' + group.color + '; background-color: ' + group.backgroundColor}">
-									<img th:src="@{${group.icon}}" class="event-image" width="64" height="64" />
-									<img th:src="@{/img/add.svg}" class="button-modifier" width="32" height="32" />
+									<img th:src="@{${group.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" />
+									<img th:src="@{/img/add.svg}" class="button-modifier" th:width="${buttonSize / 2}" th:height="${buttonSize / 2}" />
 								</button>
 							</form>
 						</div>
@@ -47,8 +48,8 @@
 					<div class="event-column">
 						<form method="post" th:action="@{/remove-event}">
 							<button th:each="event : ${day.events[group.name]}" type="submit" class="do-button" name="id" th:value="${event.id}" >
-								<img th:src="@{${event.type.icon}}" class="event-image" width="64" height="64" th:style="${'border-color: ' + event.type.color + '; background-color: ' + event.type.backgroundColor}"/>
-								<img th:src="@{/img/remove.svg}" class="button-modifier" width="32" height="32" />
+								<img th:src="@{${event.type.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" th:style="${'border-color: ' + event.type.color + '; background-color: ' + event.type.backgroundColor}"/>
+								<img th:src="@{/img/remove.svg}" class="button-modifier" th:width="${buttonSize / 2}" th:height="${buttonSize / 2}" />
 							</button>
 						</form>
 					</div>
