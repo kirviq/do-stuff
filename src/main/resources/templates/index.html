@@ -1,11 +1,16 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org" th:with="buttonSize=${T(java.lang.Integer).valueOf(@environment.getRequiredProperty('layout.button.size'))}">
 	<head>
-		<title>Getting Started: Serving Web Content</title>
+		<title>Do Stuff</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}" />
 		<script type="text/javascript" th:src="@{/js/week.js}"></script>
 		<meta name="viewport" content="height = device-height, width = device-width" />
+		<link rel="icon" sizes="192x192" th:href="@{/img/favicon-192x192.png}">
+		<link rel="icon" sizes="194x194" th:href="@{/img/favicon-194x194.png}">
+		<link rel="icon" sizes="32x322" th:href="@{/img/favicon-32x32.png}">
+
+		<meta name="mobile-web-app-capable" content="yes">
 	</head>
 	<body>
 		<div class="grid">

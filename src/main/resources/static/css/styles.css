@@ -59,7 +59,7 @@ ul {
 .events-of-week li.TROUBLE {
 	color: red;
 }
-.grid{
+.grid {
 	display: grid;
 	position: fixed;
 	top: 0;
@@ -75,6 +75,12 @@ ul {
 }
 .add-column {
 	border-right: green dashed 2px;
+}
+h1 {
+	margin: 0;
+}
+.cell-header {
+	margin-bottom: 5px;
 }
 .cell {
 	border: 1px dashed darkgray;
