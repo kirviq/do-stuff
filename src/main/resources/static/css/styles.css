@@ -20,6 +20,9 @@ form {
 	background-color: #000000D0;
 	z-index: 10000;
 }
+.add-form .do-button {
+	padding: 4px;
+}
 .add-form.visible {
 	display: flex;
 	justify-content: center;
@@ -54,7 +57,7 @@ ul {
 	color: green;
 }
 .events-of-week li.WARN {
-	color: yellow;
+	color: #cbcb00;
 }
 .events-of-week li.TROUBLE {
 	color: red;
@@ -82,15 +85,42 @@ h1 {
 .cell-header {
 	margin-bottom: 5px;
 }
+.nav-button {
+	border: none;
+	background: none;
+	padding: 0;
+}
+.week-row {
+	display: flex;
+}
+.weeknumber {
+	flex-grow: 1;
+	align-items: center;
+	text-align: center;
+}
 .cell {
 	border: 1px dashed darkgray;
 	background: black;
 	padding: 3px;
+	position: relative;
 }
 .forms {
 	display: none;
 }
 .day-of-week {
+}
+.today {
+	color: #cbcb00;
+	border-color: #cbcb00;
+}
+.veil-of-future {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: #00000080;
+	z-index: 1000;
 }
 .do-button {
 	border: none;

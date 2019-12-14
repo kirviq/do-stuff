@@ -66,6 +66,7 @@ public class IndexController {
 				.mapToObj(start::plusDays)
 				.map(date -> new Day(date, eventsByDayAndType.computeIfAbsent(date, ignored -> HashMultimap.create()).asMap()))
 				.toArray());
+		model.addAttribute("today", LocalDate.now());
 		return "index";
 	}
 

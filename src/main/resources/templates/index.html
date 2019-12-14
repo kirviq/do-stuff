@@ -14,9 +14,19 @@
 	</head>
 	<body>
 		<div class="grid">
-			<div class="cell week">
+			<div class="cell">
 				<h1 class="cell-header">
-					Woche <span th:text="${week.number}"></span> <br />
+					<form method="get" class="week-row">
+						<button class="nav-button" name="weeksPast" th:value="${T(java.lang.Integer).parseInt(#request.parameterMap.getOrDefault('weeksPast', '0')) + 1}">
+							<img th:src="@{/img/back.svg}" width="16" height="16" />
+						</button>
+						<span class="weeknumber">
+							Woche <span th:text="${week.number}"></span>
+						</span>
+						<button class="nav-button" name="weeksPast" th:style="${today.isAfter(week.end) ? '' : 'visibility: hidden'}" th:value="${T(java.lang.Integer).parseInt(#request.parameterMap.getOrDefault('weeksPast', '0')) - 1}">
+							<img th:src="@{/img/right-thin-chevron.svg}" width="16" height="16" />
+						</button>
+					</form>
 					<span class="daterange" th:text="${#temporals.format(week.start, 'dd.MM.') + ' - ' + #temporals.format(week.end, 'dd.MM.')}"></span>
 				</h1>
 				<ul class="events-of-week">
@@ -27,7 +37,8 @@
 					</li>
 				</ul>
 			</div>
-			<div th:each="day : ${days}" class="cell day">
+			<div th:each="day : ${days}" class="cell day" th:classappend="${day.date.equals(today) ? ' today ' : (day.date.isAfter(today) ? ' future ' : '')}">
+				<div class="veil-of-future" th:if="${day.date.isAfter(today)}"></div>
 				<h1 class="day-of-week" th:text="${#temporals.format(day.date, 'EEEE')}"></h1>
 				<div th:each="group : ${groups}" class="day-row">
 					<div class="add-column">
@@ -39,7 +50,7 @@
 							<form method="post" th:action="@{/add-event}" class="add-form" th:id="${'add_event_' + day.date + '_' + group.name}">
 								<input th:unless="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="date" th:value="${day.date}" />
 								<button th:each="type: ${group.types}" type="submit" name="type" th:value="${type.name}" class="do-button" th:style="${'border-color: ' + type.color + '; background-color: ' + type.backgroundColor}">
-									<img th:src="@{${type.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" />
+									<img th:src="@{${type.icon}}" class="event-image" th:width="${buttonSize * 2}" th:height="${buttonSize * 2}" />
 								</button>
 							</form>
 						</div>
