@@ -3,6 +3,7 @@ body {
 	background-color: black;
 	color: silver;
 	font-size: 24px;
+	font-family: sans-serif;
 }
 form {
 	margin: 0;
@@ -24,11 +25,39 @@ form {
 	justify-content: center;
 	align-items: center;
 }
+.daterange {
+	white-space: nowrap;
+}
+h1 {
+	font-size: 24px;
+	margin-top: 0;
+}
 .add-form .do-button {
 	margin: 12px;
 	border: 2px solid transparent;
 	border-radius: 6px;
 
+}
+ul {
+	margin: 0;
+	list-style: none;
+	padding: 0;
+}
+.events-of-week {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+}
+.events-of-week li {
+	font-size: 14px;
+}
+.events-of-week li.OK {
+	color: green;
+}
+.events-of-week li.WARN {
+	color: yellow;
+}
+.events-of-week li.TROUBLE {
+	color: red;
 }
 .grid{
 	display: grid;
@@ -38,6 +67,11 @@ form {
 	right: 0;
 	bottom: 0;
 	grid-template-columns: 1fr 1fr;
+}
+@media all and (orientation: landscape) {
+	.grid{
+		grid-template-columns: 1fr 1fr 1fr 1fr;
+	}
 }
 .add-column {
 	border-right: green dashed 2px;

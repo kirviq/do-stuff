@@ -17,6 +17,10 @@
 			<column name="icon" type="VARCHAR(255)" />
 			<column name="color" type="VARCHAR(255)" defaultValue="silver"/>
 			<column name="background_color" type="VARCHAR(255)" defaultValue="black"/>
+			<column name="required_min_per_week" type="INT" defaultValue="-1"/>
+			<column name="desired_min_per_week" type="INT" defaultValue="-1"/>
+			<column name="desired_max_per_week" type="INT" defaultValue="-1"/>
+			<column name="required_max_per_week" type="INT" defaultValue="-1"/>
 		</createTable>
 		<addForeignKeyConstraint baseTableName="types" baseColumnNames="group_name" constraintName="types_need_a_group"
 		                         referencedTableName="event_groups" referencedColumnNames="name" />
@@ -31,12 +35,6 @@
 			<column name="timestamp" type="TIMESTAMP">
 				<constraints nullable="false" />
 			</column>
-			<column name="float_value_1" type="DOUBLE" />
-			<column name="float_value_2" type="DOUBLE" />
-			<column name="float_value_3" type="DOUBLE" />
-			<column name="float_value_4" type="DOUBLE" />
-			<column name="float_value_5" type="DOUBLE" />
-			<column name="string_value_1" type="VARCHAR(255)" />
 		</createTable>
 		<createIndex tableName="events" indexName="events_by_date">
 			<column name="timestamp"></column>
@@ -53,6 +51,7 @@
 			<column name="name" value="vegetables" />
 			<column name="group_name" value="food" />
 			<column name="icon" value="/img/broccoli.svg" />
+			<column name="desired_min_per_week" value="10" />
 		</insert>
 
 		<insert tableName="types">
@@ -65,12 +64,15 @@
 			<column name="name" value="meat" />
 			<column name="group_name" value="food" />
 			<column name="icon" value="/img/steak.svg" />
+			<column name="desired_max_per_week" value="2" />
+			<column name="required_max_per_week" value="4" />
 		</insert>
 
 		<insert tableName="types">
 			<column name="name" value="sin" />
 			<column name="group_name" value="food" />
 			<column name="icon" value="/img/sorbet.svg" />
+			<column name="required_max_per_week" value="2" />
 		</insert>
 
 
@@ -83,6 +85,8 @@
 			<column name="name" value="meds" />
 			<column name="group_name" value="meds" />
 			<column name="icon" value="/img/pills.svg" />
+			<column name="required_min_per_week" value="12" />
+			<column name="desired_min_per_week" value="14" />
 		</insert>
 
 
@@ -95,6 +99,8 @@
 			<column name="name" value="move" />
 			<column name="group_name" value="activities" />
 			<column name="icon" value="/img/relaxing-walk.svg" />
+			<column name="required_min_per_week" value="3" />
+			<column name="desired_min_per_week" value="5" />
 		</insert>
 	</changeSet>
 

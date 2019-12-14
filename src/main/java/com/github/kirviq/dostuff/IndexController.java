@@ -2,6 +2,7 @@ package com.github.kirviq.dostuff;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.springframework.http.HttpStatus;
@@ -44,16 +45,17 @@ public class IndexController {
 			Multimap<String, EventData> eventsAtThatDay = eventsByDayAndType.computeIfAbsent(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate(), day -> LinkedHashMultimap.create());
 			eventsAtThatDay.put(event.getType().getGroup().getName(), event);
 		}
-		List<EventGroup> groups = Lists.newArrayList(this.groups.findAll());
-		model.addAttribute("groups", groups);
+		List<EventGroup> eventGroups = Lists.newArrayList(this.groups.findAll());
+		model.addAttribute("groups", eventGroups);
 
 		HashMultimap<String, EventData> eventsThisWeekByType = eventsThisWeek.stream()
 				.collect(Multimaps.toMultimap(event -> event.getType().getName(), Function.identity(), HashMultimap::create));
-		List<EventStats> stats = groups.stream()
+		List<EventStats> stats = eventGroups.stream()
 				.flatMap(group -> group.getTypes().stream())
 				.map(type -> new EventStats(
 						type,
 						Optional.ofNullable(eventsThisWeekByType.asMap().get(type.getName())).map(Collection::size).orElse(0)))
+				.peek(this::setStatusAndWarning)
 				.collect(Collectors.toList());
 
 		model.addAttribute("week", new Week(
@@ -65,6 +67,26 @@ public class IndexController {
 				.map(date -> new Day(date, eventsByDayAndType.computeIfAbsent(date, ignored -> HashMultimap.create()).asMap()))
 				.toArray());
 		return "index";
+	}
+
+	private void setStatusAndWarning(EventStats stat) {
+		if (stat.type.getRequiredMinPerWeek() < 0 && stat.type.getDesiredMinPerWeek() < 0 && stat.type.getDesiredMaxPerWeek() < 0 && stat.type.getRequiredMaxPerWeek() < 0) {
+			stat.status = "NONE";
+		} else if (stat.type.getRequiredMinPerWeek() >= 0 && stat.count < stat.type.getRequiredMinPerWeek()) {
+			stat.status = "TROUBLE";
+			stat.setWarning("(< " + stat.type.getRequiredMinPerWeek() + ")");
+		} else if (stat.type.getDesiredMinPerWeek() >= 0&& stat.count < stat.type.getDesiredMinPerWeek()) {
+			stat.status = "WARN";
+			stat.setWarning("(< " + stat.type.getDesiredMinPerWeek() + ")");
+		} else if (stat.type.getRequiredMaxPerWeek() >= 0 && stat.count > stat.type.getRequiredMaxPerWeek()) {
+			stat.status = "TROUBLE";
+			stat.setWarning("(> " + stat.type.getRequiredMaxPerWeek() + ")");
+		} else if (stat.type.getDesiredMaxPerWeek() >= 0 && stat.count > stat.type.getDesiredMaxPerWeek()) {
+			stat.status = "WARN";
+			stat.setWarning("(> " + stat.type.getDesiredMaxPerWeek() + ")");
+		} else {
+			stat.status = "OK";
+		}
 	}
 
 	@PostMapping("/add-event")
@@ -95,10 +117,13 @@ public class IndexController {
 		LocalDate end;
 		List<EventStats> stats;
 	}
-	@Value
+	@Data
+	@RequiredArgsConstructor
 	private static class EventStats {
-		EventType type;
-		int count;
+		final EventType type;
+		final int count;
+		String status;
+		String warning;
 	}
 	@Value
 	private static class Day {
