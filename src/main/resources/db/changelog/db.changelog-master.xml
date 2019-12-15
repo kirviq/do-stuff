@@ -103,5 +103,17 @@
 			<column name="desired_min_per_week" value="5" />
 		</insert>
 	</changeSet>
+	<changeSet author="joachim" id="someUniqueId-5678">
+		<createTable tableName="health_data">
+			<column name="date" type="date" >
+				<constraints primaryKey="true" />
+			</column>
+			<column name="weight" type="decimal(4,1)"><constraints nullable="false" /></column>
+			<column name="bloodsugar" type="decimal"><constraints nullable="false" /></column>
+			<column name="bp_systolic" type="decimal"><constraints nullable="false" /></column>
+			<column name="bp_diastolic" type="decimal"><constraints nullable="false" /></column>
+			<column name="pulse" type="decimal"><constraints nullable="false" /></column>
+		</createTable>
+	</changeSet>
 
 </databaseChangeLog>

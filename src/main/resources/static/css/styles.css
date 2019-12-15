@@ -9,21 +9,75 @@ form {
 	margin: 0;
 	padding: 0;
 }
-.add-form {
+button {
+	border: none;
+	padding: 0;
+	margin: 0;
+	background: none;
+	color: silver;
+	cursor: pointer;
+	font-size: inherit;
+}
+input {
+	background: silver;
+	border: none;
+	padding: 4px 2px;
+	font-size: inherit;
+}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+.data-form {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.data-form .fields {
+	display: grid;
+	grid-template-columns: auto auto;
+	padding: 12px;
+	border: 2px solid silver;
+	border-radius: 12px;
+	background: black;
+}
+.data-form .fields > * {
+	margin: 12px 12px 0 0;
+	align-self: end;
+}
+.data-form .fields input {
+	width: 4.5rem;
+	height: 1em;
+}
+.save-button {
+	grid-column: 1 / span 2;
+	border: 4px outset silver;
+	background: silver;
+	color: black;
+}
+.fullscreen-form {
 	display: none;
 	position: fixed;
 	top: 0;
 	right: 0;
 	bottom: 0;
 	left: 0;
-	padding: 30px;
 	background-color: #000000D0;
 	z-index: 10000;
+}
+.add-form {
+	padding: 30px;
 }
 .add-form .do-button {
 	padding: 4px;
 }
-.add-form.visible {
+.health-data-button {
+	position: absolute;
+	top: 6px;
+	right: 3px;
+}
+.fullscreen-form.visible {
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -64,12 +118,12 @@ ul {
 }
 .grid {
 	display: grid;
+	grid-template-columns: 1fr 1fr;
 	position: fixed;
 	top: 0;
 	left: 0;
 	right: 0;
 	bottom: 0;
-	grid-template-columns: 1fr 1fr;
 }
 @media all and (orientation: landscape) {
 	.grid{
@@ -129,7 +183,6 @@ h1 {
 	position: relative;
 	background: transparent;
 	color: inherit;
-	cursor: pointer;
 }
 .do-button .event-icon {
 

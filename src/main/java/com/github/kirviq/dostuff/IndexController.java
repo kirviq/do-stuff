@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.WeekFields;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -27,9 +29,12 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class IndexController {
 	private static final ZoneId EUROPE_BERLIN = ZoneId.of("Europe/Berlin");
+	private static final WeekFields WEEK_FIELDS = WeekFields.of(Locale.GERMANY);
+
 	private final EventDataRepository events;
 	private final EventTypeRepository types;
 	private final EventGroupRepository groups;
+	private final HealthDataRepository healthData;
 
 	@GetMapping("/")
 	public String index(@RequestParam(required = false) Integer weeksPast, Model model) {
@@ -50,6 +55,7 @@ public class IndexController {
 
 		HashMultimap<String, EventData> eventsThisWeekByType = eventsThisWeek.stream()
 				.collect(Multimaps.toMultimap(event -> event.getType().getName(), Function.identity(), HashMultimap::create));
+
 		List<EventStats> stats = eventGroups.stream()
 				.flatMap(group -> group.getTypes().stream())
 				.map(type -> new EventStats(
@@ -59,14 +65,23 @@ public class IndexController {
 				.collect(Collectors.toList());
 
 		model.addAttribute("week", new Week(
-				start.get(ChronoField.ALIGNED_WEEK_OF_YEAR) + 1,
+				start.get(WEEK_FIELDS.weekOfYear()),
 				start, start.plusDays(6),
 				stats));
+
+		Map<LocalDate, HealthData> healthDataThisWeek = healthData.findHealthDataByDateBetween(start, start.plusDays(6)).stream()
+				.collect(Collectors.toMap(HealthData::getDate, Function.identity()));
 		model.addAttribute("days", IntStream.of(0, 1, 2, 3, 4, 5, 6)
 				.mapToObj(start::plusDays)
-				.map(date -> new Day(date, eventsByDayAndType.computeIfAbsent(date, ignored -> HashMultimap.create()).asMap()))
+				.map(date -> new Day(
+						date,
+						healthDataThisWeek.get(date),
+						eventsByDayAndType.computeIfAbsent(date, ignored -> HashMultimap.create()).asMap()
+				))
 				.toArray());
+
 		model.addAttribute("today", LocalDate.now());
+
 		return "index";
 	}
 
@@ -101,14 +116,39 @@ public class IndexController {
 				.orElse(Instant.now());
 		event.setTimestamp(timestamp);
 		events.save(event);
-		return "redirect:/";
+		return getRedirect(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate());
+	}
+
+	@PostMapping("/add-data")
+	public String addData(@RequestParam String day, @RequestParam String weight, @RequestParam String sugar, @RequestParam String bpsys, @RequestParam String bpdia, @RequestParam String pulse) {
+		HealthData data = new HealthData();
+		data.setBloodsugar(asInt(sugar));
+		data.setBpDiastolic(asInt(bpdia));
+		data.setBpSystolic(asInt(bpsys));
+		data.setDate(LocalDate.parse(day));
+		data.setPulse(asInt(pulse));
+		data.setWeight(Strings.isNullOrEmpty(weight) ? BigDecimal.ZERO : new BigDecimal(weight));
+		healthData.save(data);
+		return getRedirect(data.getDate());
+	}
+
+	private int asInt(String string) {
+		if (Strings.isNullOrEmpty(string)) {
+			return 0;
+		}
+		return Integer.parseInt(string);
 	}
 
 	@PostMapping("/remove-event")
 	public String addEvent(@RequestParam(name = "id") Long id) {
 		EventData event = events.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "event " + id + " not found"));
 		events.delete(event);
-		return "redirect:/";
+		return getRedirect(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate());
+	}
+
+	private static String getRedirect(LocalDate date) {
+		int weeksPast = LocalDate.now().get(WEEK_FIELDS.weekOfYear()) - date.get(WEEK_FIELDS.weekOfYear());
+		return "redirect:/" + (weeksPast == 0 ? "" : ("?weeksPast=" + weeksPast));
 	}
 
 	@Value
@@ -129,6 +169,7 @@ public class IndexController {
 	@Value
 	private static class Day {
 		LocalDate date;
+		HealthData data;
 		Map<String, Collection<EventData>> events;
 	}
 

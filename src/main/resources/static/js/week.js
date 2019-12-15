@@ -15,9 +15,9 @@
 			}
 		});
 	}
-	function showForm(event) {
+	function revealStuff(event) {
 		const data = getDataFromButton(event.target);
-		document.getElementById(data.formId).className += ' visible';
+		document.getElementById(data.showId).className += ' visible';
 	}
 	function hideForm(event) {
 		const form = event.target;
@@ -27,10 +27,10 @@
 		form.className = form.className.replace(/visible/g, '');
 	}
 	addEventListener('DOMContentLoaded', () => {
-		Array.prototype.forEach.call(document.querySelectorAll('.add-column .add-multiple-button'), button => {
-			button.addEventListener('click', showForm, false);
+		Array.prototype.forEach.call(document.querySelectorAll('.revealer-button'), button => {
+			button.addEventListener('click', revealStuff, false);
 		});
-		Array.prototype.forEach.call(document.querySelectorAll('.add-form'), button => {
+		Array.prototype.forEach.call(document.querySelectorAll('.fullscreen-form'), button => {
 			button.addEventListener('click', hideForm, false);
 		});
 	});

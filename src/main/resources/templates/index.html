@@ -40,14 +40,31 @@
 			<div th:each="day : ${days}" class="cell day" th:classappend="${day.date.equals(today) ? ' today ' : (day.date.isAfter(today) ? ' future ' : '')}">
 				<div class="veil-of-future" th:if="${day.date.isAfter(today)}"></div>
 				<h1 class="day-of-week" th:text="${#temporals.format(day.date, 'EEEE')}"></h1>
+				<button type="button" class="health-data-button revealer-button" th:data-show-id="${'input-data-' + day.date}">
+					<img th:src="@{${day.data == null ? '/img/file_empty.svg' : '/img/file.svg'}}" th:width="${buttonSize / 1.5}" th:height="${buttonSize / 1.5}" />
+				</button>
+				<form method="post" th:action="@{/add-data}" class="data-form fullscreen-form" th:id="${'input-data-' + day.date}">
+					<input type="hidden" name="day" th:value="${day.date}" />
+					<div class="fields">
+						<label th:for="${'weight_' + day.date}">Gewicht</label><input th:id="${'weight_' + day.date}" name="weight" type="number" step="0.1" th:value="${day.data != null && day.data.weight > 0 ? day.data.weight : ''}" />
+						<label th:for="${'sugar_' + day.date}">Blutzucker</label><input th:id="${'sugar_' + day.date}" name="sugar" type="number" step="1" th:value="${day.data != null && day.data.bloodsugar > 0 ? day.data.bloodsugar : ''}" />
+						<label th:for="${'bpsys_' + day.date}">Blutdruck</label>
+						<span>
+							<input th:id="${'bpsys_' + day.date}" name="bpsys" type="number" step="1" th:value="${day.data != null && day.data.bpSystolic > 0 ? day.data.bpSystolic : ''}" />
+							<span>/</span>
+							<input name="bpdia" type="number" step="1" th:value="${day.data != null && day.data.bpDiastolic > 0 ? day.data.bpDiastolic : ''}" /></span>
+						<label th:for="${'pulse_' + day.date}">Puls</label><input th:id="${'pulse_' + day.date}" name="pulse" type="number" step="1" th:value="${day.data != null && day.data.pulse > 0 ? day.data.pulse : ''}" />
+						<button class="save-button">Speichern</button>
+					</div>
+				</form>
 				<div th:each="group : ${groups}" class="day-row">
 					<div class="add-column">
 						<div th:if="${group.types.size() > 1}">
-							<button type="button" class="do-button add-multiple-button" th:data-form-id="${'add_event_' + day.date + '_' + group.name}" th:style="${'border-color: ' + group.color + '; background-color: ' + group.backgroundColor}">
+							<button type="button" class="do-button revealer-button" th:data-show-id="${'add_event_' + day.date + '_' + group.name}" th:style="${'border-color: ' + group.color + '; background-color: ' + group.backgroundColor}">
 								<img th:src="@{${group.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" />
 								<img th:src="@{/img/add.svg}" class="button-modifier" th:width="${buttonSize / 2}" th:height="${buttonSize / 2}" />
 							</button>
-							<form method="post" th:action="@{/add-event}" class="add-form" th:id="${'add_event_' + day.date + '_' + group.name}">
+							<form method="post" th:action="@{/add-event}" class="fullscreen-form add-form" th:id="${'add_event_' + day.date + '_' + group.name}">
 								<input th:unless="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="date" th:value="${day.date}" />
 								<button th:each="type: ${group.types}" type="submit" name="type" th:value="${type.name}" class="do-button" th:style="${'border-color: ' + type.color + '; background-color: ' + type.backgroundColor}">
 									<img th:src="@{${type.icon}}" class="event-image" th:width="${buttonSize * 2}" th:height="${buttonSize * 2}" />
