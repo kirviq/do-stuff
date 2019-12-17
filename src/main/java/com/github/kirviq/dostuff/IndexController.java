@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
@@ -38,7 +39,7 @@ public class IndexController {
 
 	@GetMapping("/")
 	public String index(@RequestParam(required = false) Integer weeksPast, Model model) {
-		LocalDate start = LocalDate.now().with(ChronoField.DAY_OF_WEEK, 1);
+		LocalDate start = LocalDate.now(EUROPE_BERLIN).with(ChronoField.DAY_OF_WEEK, 1);
 		if (weeksPast != null) {
 			start = start.minus(weeksPast, ChronoUnit.WEEKS);
 		}
@@ -80,7 +81,7 @@ public class IndexController {
 				))
 				.toArray());
 
-		model.addAttribute("today", LocalDate.now());
+		model.addAttribute("today", LocalDate.now(EUROPE_BERLIN));
 
 		return "index";
 	}
@@ -106,16 +107,25 @@ public class IndexController {
 	}
 
 	@PostMapping("/add-event")
-	public String addEvent(@RequestParam String type, @RequestParam(name = "date", required = false) String date) {
+	public String addEvent(@RequestParam String type, @RequestParam(name = "date") String dateString) {
 		EventData event = new EventData();
 		event.setTimestamp(Instant.now());
 		event.setType(types.findById(type).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "type " + type + " not known")));
-		Instant timestamp = Optional
-				.ofNullable(Strings.emptyToNull(date))
-				.map(string -> LocalDate.parse(string).atTime(23, 59, 59).atZone(EUROPE_BERLIN).toInstant())
-				.orElse(Instant.now());
+		LocalDate date = LocalDate.parse(dateString);
+		boolean eventIsToday = LocalDate.now(EUROPE_BERLIN).equals(date);
+		Instant timestamp = date.atTime(eventIsToday
+				? LocalTime.now(EUROPE_BERLIN)
+				: LocalTime.of(23, 59, 59, 999000)
+		).atZone(EUROPE_BERLIN).toInstant();
 		event.setTimestamp(timestamp);
 		events.save(event);
+		return getRedirect(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate());
+	}
+
+	@PostMapping("/remove-event")
+	public String addEvent(@RequestParam(name = "id") Long id) {
+		EventData event = events.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "event " + id + " not found"));
+		events.delete(event);
 		return getRedirect(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate());
 	}
 
@@ -139,15 +149,8 @@ public class IndexController {
 		return Integer.parseInt(string);
 	}
 
-	@PostMapping("/remove-event")
-	public String addEvent(@RequestParam(name = "id") Long id) {
-		EventData event = events.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "event " + id + " not found"));
-		events.delete(event);
-		return getRedirect(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate());
-	}
-
 	private static String getRedirect(LocalDate date) {
-		int weeksPast = LocalDate.now().get(WEEK_FIELDS.weekOfYear()) - date.get(WEEK_FIELDS.weekOfYear());
+		int weeksPast = LocalDate.now(EUROPE_BERLIN).get(WEEK_FIELDS.weekOfYear()) - date.get(WEEK_FIELDS.weekOfYear());
 		return "redirect:/" + (weeksPast == 0 ? "" : ("?weeksPast=" + weeksPast));
 	}
 

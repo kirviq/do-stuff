@@ -65,7 +65,7 @@
 								<img th:src="@{/img/add.svg}" class="button-modifier" th:width="${buttonSize / 2}" th:height="${buttonSize / 2}" />
 							</button>
 							<form method="post" th:action="@{/add-event}" class="fullscreen-form add-form" th:id="${'add_event_' + day.date + '_' + group.name}">
-								<input th:unless="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="date" th:value="${day.date}" />
+								<input type="hidden" name="date" th:value="${day.date}" />
 								<button th:each="type: ${group.types}" type="submit" name="type" th:value="${type.name}" class="do-button" th:style="${'border-color: ' + type.color + '; background-color: ' + type.backgroundColor}">
 									<img th:src="@{${type.icon}}" class="event-image" th:width="${buttonSize * 2}" th:height="${buttonSize * 2}" />
 								</button>
@@ -74,7 +74,7 @@
 						<div th:if="${group.types.size() == 1}">
 							<form method="post" th:action="@{/add-event}">
 								<input type="hidden" name="type" th:value="${group.types[0].name}" />
-								<input th:unless="${T(java.time.LocalDate).now().equals(day.date)}" type="hidden" name="date" th:value="${day.date}" />
+								<input type="hidden" name="date" th:value="${day.date}" />
 								<button type="submit" class="do-button" th:style="${'border-color: ' + group.color + '; background-color: ' + group.backgroundColor}">
 									<img th:src="@{${group.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" />
 									<img th:src="@{/img/add.svg}" class="button-modifier" th:width="${buttonSize / 2}" th:height="${buttonSize / 2}" />
