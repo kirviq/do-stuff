@@ -19,8 +19,9 @@ public class TypeGroup {
 	@Column(name = "background_color")
 	private String backgroundColor;
 
-	@OneToMany
+	@OneToMany(fetch = FetchType.EAGER)
 	@JoinColumn(name = "group_name")
+	@OrderBy("order")
 	private List<EventType> types;
 
 	@Override

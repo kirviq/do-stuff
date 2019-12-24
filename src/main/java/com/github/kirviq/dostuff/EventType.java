@@ -21,6 +21,8 @@ public class EventType {
 	@ManyToOne
 	private TypeGroup group;
 	private String icon;
+	@Column(name = "order_col")
+	private int order;
 	private String color;
 	@Column(name = "background_color")
 	private String backgroundColor;

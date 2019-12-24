@@ -46,12 +46,14 @@ public class IndexController {
 		Map<LocalDate, Multimap<String, EventData>> eventsByDayAndType = new HashMap<>();
 		Instant startOfWeek = start.atStartOfDay().toInstant(EUROPE_BERLIN.getRules().getOffset(Instant.now()));
 		Instant endOfWeek = start.plusWeeks(1).atStartOfDay().toInstant(EUROPE_BERLIN.getRules().getOffset(Instant.now()));
-		List<EventData> eventsThisWeek = events.findEventsByTimestampBetweenOrderByTimestampAsc(startOfWeek, endOfWeek);
+		List<EventData> eventsThisWeek = events.findEventsByTimestampBetweenOrderByIdAsc(startOfWeek, endOfWeek);
 		for (EventData event : eventsThisWeek) {
 			Multimap<String, EventData> eventsAtThatDay = eventsByDayAndType.computeIfAbsent(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate(), day -> LinkedHashMultimap.create());
 			eventsAtThatDay.put(event.getType().getGroup().getName(), event);
 		}
-		List<TypeGroup> eventGroups = Lists.newArrayList(this.groups.findAll());
+		List<TypeGroup> eventGroups = Streams.stream(this.groups.findAll())
+				.sorted(Comparator.comparingInt(group -> group.getTypes().get(0).getOrder()))
+				.collect(Collectors.toList());
 		model.addAttribute("groups", eventGroups);
 
 		HashMultimap<String, EventData> eventsThisWeekByType = eventsThisWeek.stream()

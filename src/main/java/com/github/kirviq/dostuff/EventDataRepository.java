@@ -6,5 +6,5 @@ import java.time.Instant;
 import java.util.List;
 
 public interface EventDataRepository extends CrudRepository<EventData, Long> {
-	List<EventData> findEventsByTimestampBetweenOrderByTimestampAsc(Instant from, Instant to);
+	List<EventData> findEventsByTimestampBetweenOrderByIdAsc(Instant from, Instant to);
 }

@@ -140,4 +140,19 @@
 		</createTable>
 	</changeSet>
 
+	<changeSet id="bring-order-to-even-types" author="joachim">
+		<addColumn tableName="types">
+			<column name="order_col" type="int" defaultValue="0"><constraints nullable="false" /></column>
+		</addColumn>
+		<update tableName="types"><column name="order_col" value="1000" /><where>name='vegetables'</where></update>
+		<update tableName="types"><column name="order_col" value="2000" /><where>name='fruits'</where></update>
+		<update tableName="types"><column name="order_col" value="3000" /><where>name='carbs'</where></update>
+		<update tableName="types"><column name="order_col" value="4000" /><where>name='fish'</where></update>
+		<update tableName="types"><column name="order_col" value="5000" /><where>name='meat'</where></update>
+		<update tableName="types"><column name="order_col" value="6000" /><where>name='sweets'</where></update>
+		<update tableName="types"><column name="order_col" value="7000" /><where>name='alcohol'</where></update>
+		<update tableName="types"><column name="order_col" value="8000" /><where>name='meds'</where></update>
+		<update tableName="types"><column name="order_col" value="9000" /><where>name='move'</where></update>
+	</changeSet>
+
 </databaseChangeLog>
