@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Entity
-@Table(name = "event_groups")
+@Table(name = "type_groups")
 @Data
-public class EventGroup {
+public class TypeGroup {
 	@Id
 	private String name;
 

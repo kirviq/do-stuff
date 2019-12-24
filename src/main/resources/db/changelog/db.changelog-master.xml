@@ -4,7 +4,7 @@
 		xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
 	<changeSet author="joachim" id="someUniqueId-1234">
-		<createTable tableName="event_groups">
+		<createTable tableName="type_groups">
 			<column name="name" type="VARCHAR(255)"><constraints primaryKey="true" /></column>
 			<column name="icon" type="VARCHAR(255)" />
 			<column name="color" type="VARCHAR(255)" defaultValue="silver"/>
@@ -21,9 +21,12 @@
 			<column name="desired_min_per_week" type="INT" defaultValue="-1"/>
 			<column name="desired_max_per_week" type="INT" defaultValue="-1"/>
 			<column name="required_max_per_week" type="INT" defaultValue="-1"/>
+			<column name="counts_as" type="VARCHAR(255)" />
 		</createTable>
-		<addForeignKeyConstraint baseTableName="types" baseColumnNames="group_name" constraintName="types_need_a_group"
-		                         referencedTableName="event_groups" referencedColumnNames="name" />
+		<addForeignKeyConstraint baseTableName="types" baseColumnNames="group_name" constraintName="types_have_groups"
+		                         referencedTableName="type_groups" referencedColumnNames="name" />
+		<addForeignKeyConstraint baseTableName="types" baseColumnNames="counts_as" constraintName="some_types_count_as_other_types"
+		                         referencedTableName="types" referencedColumnNames="name" />
 
 		<createTable tableName="events">
 			<column autoIncrement="true" name="id" type="BIGINT">
@@ -39,10 +42,10 @@
 		<createIndex tableName="events" indexName="events_by_date">
 			<column name="timestamp"></column>
 		</createIndex>
-		<addForeignKeyConstraint baseTableName="events" baseColumnNames="type_name" constraintName="events_need_a_type"
+		<addForeignKeyConstraint baseTableName="events" baseColumnNames="type_name" constraintName="events_have_types"
 		                         referencedTableName="types" referencedColumnNames="name" />
 
-		<insert tableName="event_groups">
+		<insert tableName="type_groups">
 			<column name="name" value="food" />
 			<column name="icon" value="/img/spoon-and-fork-crossed.svg" />
 		</insert>
@@ -52,6 +55,13 @@
 			<column name="group_name" value="food" />
 			<column name="icon" value="/img/broccoli.svg" />
 			<column name="desired_min_per_week" value="10" />
+		</insert>
+
+		<insert tableName="types">
+			<column name="name" value="fruits" />
+			<column name="group_name" value="food" />
+			<column name="icon" value="/img/apple.svg" />
+			<column name="counts_as" value="vegetables" />
 		</insert>
 
 		<insert tableName="types">
@@ -69,14 +79,28 @@
 		</insert>
 
 		<insert tableName="types">
-			<column name="name" value="sin" />
+			<column name="name" value="fish" />
+			<column name="group_name" value="food" />
+			<column name="icon" value="/img/sardines.svg" />
+			<column name="counts_as" value="meat" />
+		</insert>
+
+		<insert tableName="types">
+			<column name="name" value="sweets" />
 			<column name="group_name" value="food" />
 			<column name="icon" value="/img/sorbet.svg" />
 			<column name="required_max_per_week" value="2" />
 		</insert>
 
+		<insert tableName="types">
+			<column name="name" value="alcohol" />
+			<column name="group_name" value="food" />
+			<column name="icon" value="/img/beer.svg" />
+			<column name="counts_as" value="sweets" />
+		</insert>
 
-		<insert tableName="event_groups">
+
+		<insert tableName="type_groups">
 			<column name="name" value="meds" />
 			<column name="icon" value="/img/pills.svg" />
 		</insert>
@@ -90,7 +114,7 @@
 		</insert>
 
 
-		<insert tableName="event_groups">
+		<insert tableName="type_groups">
 			<column name="name" value="activities" />
 			<column name="icon" value="/img/relaxing-walk.svg" />
 		</insert>

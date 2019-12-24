@@ -86,7 +86,6 @@
 						<form method="post" th:action="@{/remove-event}">
 							<button th:each="event : ${day.events[group.name]}" type="submit" class="do-button" name="id" th:value="${event.id}" >
 								<img th:src="@{${event.type.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" th:style="${'border-color: ' + event.type.color + '; background-color: ' + event.type.backgroundColor}"/>
-								<img th:src="@{/img/remove.svg}" class="button-modifier" th:width="${buttonSize / 2}" th:height="${buttonSize / 2}" />
 							</button>
 						</form>
 					</div>

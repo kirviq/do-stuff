@@ -51,11 +51,11 @@ public class IndexController {
 			Multimap<String, EventData> eventsAtThatDay = eventsByDayAndType.computeIfAbsent(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate(), day -> LinkedHashMultimap.create());
 			eventsAtThatDay.put(event.getType().getGroup().getName(), event);
 		}
-		List<EventGroup> eventGroups = Lists.newArrayList(this.groups.findAll());
+		List<TypeGroup> eventGroups = Lists.newArrayList(this.groups.findAll());
 		model.addAttribute("groups", eventGroups);
 
 		HashMultimap<String, EventData> eventsThisWeekByType = eventsThisWeek.stream()
-				.collect(Multimaps.toMultimap(event -> event.getType().getName(), Function.identity(), HashMultimap::create));
+				.collect(Multimaps.toMultimap(event -> Optional.ofNullable(event.getType().getCountsAs()).orElse(event.getType()).getName(), Function.identity(), HashMultimap::create));
 
 		List<EventStats> stats = eventGroups.stream()
 				.flatMap(group -> group.getTypes().stream())

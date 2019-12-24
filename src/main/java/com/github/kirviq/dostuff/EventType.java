@@ -2,7 +2,12 @@ package com.github.kirviq.dostuff;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @Data
 @Entity
@@ -11,7 +16,10 @@ public class EventType {
 	@Id
 	private String name;
 	@ManyToOne
-	private EventGroup group;
+	@JoinColumn(name = "counts_as")
+	private EventType countsAs;
+	@ManyToOne
+	private TypeGroup group;
 	private String icon;
 	private String color;
 	@Column(name = "background_color")
