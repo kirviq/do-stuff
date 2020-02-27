@@ -18,6 +18,9 @@ public class TypeGroup {
 	private String color;
 	@Column(name = "background_color")
 	private String backgroundColor;
+	private boolean groupable;
+	@Column(name = "group_icon")
+	private String groupIcon;
 
 	@OneToMany(fetch = FetchType.EAGER)
 	@JoinColumn(name = "group_name")

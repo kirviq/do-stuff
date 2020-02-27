@@ -37,6 +37,7 @@
 					</li>
 				</ul>
 			</div>
+			<!--/*@thymesVar id="days" type="java.util.List<com.github.kirviq.dostuff.IndexController.Day>"*/-->
 			<div th:each="day : ${days}" class="cell day" th:classappend="${day.date.equals(today) ? ' today ' : (day.date.isAfter(today) ? ' future ' : '')}">
 				<div class="veil-of-future" th:if="${day.date.isAfter(today)}"></div>
 				<h1 class="day-of-week" th:text="${#temporals.format(day.date, 'EEEE')}"></h1>
@@ -84,9 +85,18 @@
 					</div>
 					<div class="event-column">
 						<form method="post" th:action="@{/remove-event}">
-							<button th:each="event : ${day.events[group.name]}" type="submit" class="do-button" name="id" th:value="${event.id}" >
-								<img th:src="@{${event.type.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" th:style="${'border-color: ' + event.type.color + '; background-color: ' + event.type.backgroundColor}"/>
-							</button>
+							<span th:each="object : ${day.events[group.name]}">
+								<span th:if="${object instanceof T(com.github.kirviq.dostuff.IndexController.EventGroup)}" class="event-group" th:style="'width: ' + ${buttonSize} + 'px; height: ' + ${buttonSize} + 'px; background-image: url(' + @{${object.icon}} + ')'">
+									<button th:each="part : ${object.parts}" type="submit" class="do-button" name="id" th:value="${part.event.id}" th:style="'position: absolute; left: ' + ${part.x} + 'px; top: ' + ${part.y} + 'px; width: ' + ${buttonSize /2} + 'px; line-height: ' + ${buttonSize /2} + 'px; height: ' + ${buttonSize / 2} + 'px;'">
+										<img th:src="@{${part.event.type.icon}}" class="event-image" th:width="${buttonSize / 2}" th:height="${buttonSize / 2}" />
+									</button>
+								</span>
+								<span th:if="${object instanceof T(com.github.kirviq.dostuff.EventData)}" th:with="event=${object}">
+									<button type="submit" class="do-button" name="id" th:value="${event.id}" >
+										<img th:src="@{${event.type.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" th:style="${'border-color: ' + event.type.color + '; background-color: ' + event.type.backgroundColor}"/>
+									</button>
+								</span>
+							</span>
 						</form>
 					</div>
 				</div>
@@ -99,6 +109,6 @@
 		<form id="remover" method="post" class="forms" th:action="@{/remove-event}">
 			<input type="hidden" name="id" />
 		</form>
-		<div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+		<div>Icons made by someone from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
 	</body>
 </html>

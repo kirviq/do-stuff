@@ -185,6 +185,16 @@ h1 {
 	border: 1px solid transparent;
 	border-radius: 6px;
 }
+.event-image {
+	vertical-align: top;
+}
+.event-group {
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
+	position: relative;
+	display: inline-block;
+}
 .event-column .do-button {
 	width: auto;
 	height: auto;

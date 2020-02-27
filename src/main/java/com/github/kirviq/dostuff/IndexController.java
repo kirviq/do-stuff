@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -16,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoField;
@@ -37,19 +39,85 @@ public class IndexController {
 	private final EventGroupRepository groups;
 	private final HealthDataRepository healthData;
 
+	@Setter(onMethod = @__(@org.springframework.beans.factory.annotation.Value("${meals.max-minutes}")))
+	private int mealMinutes;
+	@Setter(onMethod = @__(@org.springframework.beans.factory.annotation.Value("${layout.button.size}")))
+	private double buttonSize;
+
+	@Data
+	public class EventGroup {
+		private Instant start;
+		private Instant end;
+		private final String icon;
+		private final List<Part> parts;
+		
+		public EventGroup(EventData event) {
+			this.icon = event.getType().getGroup().getGroupIcon();
+			this.parts = new ArrayList<>();
+			this.parts.add(new Part(event));
+			end = start = event.getTimestamp();
+		}
+		
+		public void add(EventData event) {
+			parts.add(new Part(event));
+			parts.sort(Comparator.comparing(p -> p.event.getType().getName()));
+			for (int i = 0; i < parts.size(); i++) {
+				Part part = parts.get(i);
+				double angle = 2 * Math.PI / parts.size() * i;
+				part.x = buttonSize / 4 * (1 + Math.cos(angle));
+				part.y = buttonSize / 4 * (1 + Math.sin(angle));
+			}
+		}
+	}
+
+	@Data
+	@RequiredArgsConstructor
+	public static class Part {
+		private double x;
+		private double y;
+		private final EventData event;
+	}
+
 	@GetMapping("/")
 	public String index(@RequestParam(required = false) Integer weeksPast, Model model) {
 		LocalDate start = LocalDate.now(EUROPE_BERLIN).with(ChronoField.DAY_OF_WEEK, 1);
 		if (weeksPast != null) {
 			start = start.minus(weeksPast, ChronoUnit.WEEKS);
 		}
-		Map<LocalDate, Multimap<String, EventData>> eventsByDayAndType = new HashMap<>();
+		Map<LocalDate, Multimap<String, Object>> eventsByDayAndType = new HashMap<>();
 		Instant startOfWeek = start.atStartOfDay().toInstant(EUROPE_BERLIN.getRules().getOffset(Instant.now()));
 		Instant endOfWeek = start.plusWeeks(1).atStartOfDay().toInstant(EUROPE_BERLIN.getRules().getOffset(Instant.now()));
 		List<EventData> eventsThisWeek = events.findEventsByTimestampBetweenOrderByIdAsc(startOfWeek, endOfWeek);
 		for (EventData event : eventsThisWeek) {
-			Multimap<String, EventData> eventsAtThatDay = eventsByDayAndType.computeIfAbsent(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate(), day -> LinkedHashMultimap.create());
-			eventsAtThatDay.put(event.getType().getGroup().getName(), event);
+			LocalDate localDateOfEvent = event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate();
+			Multimap<String, Object> eventsAtThatDay = eventsByDayAndType.computeIfAbsent(localDateOfEvent, day -> LinkedHashMultimap.create());
+			String group = event.getType().getGroup().getName();
+			LocalDateTime minutesToMidnight = localDateOfEvent.atTime(23, 59, 55);
+			if (minutesToMidnight.toInstant(EUROPE_BERLIN.getRules().getOffset(minutesToMidnight)).isAfter(event.getTimestamp())) {
+				Collection<Object> todayOfThisGroup = eventsAtThatDay.get(group);
+				if (!todayOfThisGroup.isEmpty()) {
+					Object lastItemFromThisGroupToday = lastOf(todayOfThisGroup);
+					if (lastItemFromThisGroupToday instanceof EventGroup) {
+						EventGroup g = (EventGroup) lastItemFromThisGroupToday;
+						if (g.end.plus(mealMinutes, ChronoUnit.MINUTES).isAfter(event.getTimestamp())) {
+							g.add(event);
+							g.end = event.getTimestamp();
+							continue;
+						}
+					}
+					if (lastItemFromThisGroupToday instanceof EventData) {
+						EventData lastEvent = (EventData) lastItemFromThisGroupToday;
+						if (lastEvent.getTimestamp().plus(mealMinutes, ChronoUnit.MINUTES).isAfter(event.getTimestamp())) {
+							EventGroup eventGroup = new EventGroup(lastEvent);
+							eventGroup.add(event);
+							todayOfThisGroup.remove(lastEvent);
+							todayOfThisGroup.add(eventGroup);
+							continue;
+						}
+					}
+				}
+			}
+			eventsAtThatDay.put(group, event);
 		}
 		List<TypeGroup> eventGroups = Streams.stream(this.groups.findAll())
 				.sorted(Comparator.comparingInt(group -> group.getTypes().get(0).getOrder()))
@@ -87,7 +155,15 @@ public class IndexController {
 
 		return "index";
 	}
-
+	
+	private static <T> T lastOf(Iterable<T> items) {
+		T last = null;
+		for (T current : items) {
+			last = current;
+		}
+		return last;
+	}
+	
 	private void setStatusAndWarning(EventStats stat) {
 		if (stat.type.getRequiredMinPerWeek() < 0 && stat.type.getDesiredMinPerWeek() < 0 && stat.type.getDesiredMaxPerWeek() < 0 && stat.type.getRequiredMaxPerWeek() < 0) {
 			stat.status = "NONE";
@@ -157,7 +233,7 @@ public class IndexController {
 	}
 
 	@Value
-	private static class Week {
+	public static class Week {
 		int number;
 		LocalDate start;
 		LocalDate end;
@@ -165,17 +241,17 @@ public class IndexController {
 	}
 	@Data
 	@RequiredArgsConstructor
-	private static class EventStats {
+	public static class EventStats {
 		final EventType type;
 		final int count;
 		String status;
 		String warning;
 	}
 	@Value
-	private static class Day {
+	public static class Day {
 		LocalDate date;
 		HealthData data;
-		Map<String, Collection<EventData>> events;
+		Map<String, Collection<Object>> events;
 	}
 
 }

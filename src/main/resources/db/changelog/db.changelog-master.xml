@@ -155,4 +155,22 @@
 		<update tableName="types"><column name="order_col" value="9000" /><where>name='move'</where></update>
 	</changeSet>
 
+	<changeSet id="group-events" author="joachim">
+		<addColumn tableName="type_groups">
+			<column name="groupable" type="boolean" defaultValue="false"><constraints nullable="false"/></column>
+		</addColumn>
+		<addColumn tableName="type_groups">
+			<column name="group_icon" type="varchar(255)"/>
+		</addColumn>
+		<update tableName="type_groups">
+			<column name="groupable" value="true" />
+			<column name="group_icon" value="/img/plate.svg" />
+			<where>name='food'</where>
+		</update>
+		<update tableName="types">
+			<column name="icon" value="/img/fish.svg"/>
+			<where>icon = '/img/sardines.svg'</where>
+		</update>
+	</changeSet>
+
 </databaseChangeLog>
