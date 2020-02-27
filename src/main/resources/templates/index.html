@@ -60,7 +60,25 @@
 				</form>
 				<div th:each="group : ${groups}" class="day-row">
 					<div class="add-column">
-						<div th:if="${group.types.size() > 1}">
+						<div th:if="${group.types.size() > 1 && group.groupable}">
+							<button type="button" class="do-button revealer-button" th:data-show-id="${'add_event_' + day.date + '_' + group.name}" th:style="${'border-color: ' + group.color + '; background-color: ' + group.backgroundColor}">
+								<img th:src="@{${group.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" />
+								<img th:src="@{/img/add.svg}" class="button-modifier" th:width="${buttonSize / 2}" th:height="${buttonSize / 2}" />
+							</button>
+							<form method="post" th:action="@{/add-events}" class="fullscreen-form add-form with-button" th:id="${'add_event_' + day.date + '_' + group.name}">
+								<input type="hidden" name="date" th:value="${day.date}" />
+								<div class="adders">
+									<span th:each="type: ${group.types}">
+										<input type="checkbox" name="type" th:value="${type.name}" class="add-event-box" th:id="${'add_event_' + day.date + '_' + group.name + '_' + type.name}" />
+										<label type="submit" name="type" class="do-button" th:style="${'border-color: ' + type.color + '; background-color: ' + type.backgroundColor}" th:for="${'add_event_' + day.date + '_' + group.name + '_' + type.name}">
+											<img th:src="@{${type.icon}}" class="event-image" th:width="${buttonSize * 2}" th:height="${buttonSize * 2}" />
+										</label>
+									</span>
+								</div>
+								<button type="submit" class="save-button">Speichern</button>
+							</form>
+						</div>
+						<div th:if="${group.types.size() > 1 && !group.groupable}">
 							<button type="button" class="do-button revealer-button" th:data-show-id="${'add_event_' + day.date + '_' + group.name}" th:style="${'border-color: ' + group.color + '; background-color: ' + group.backgroundColor}">
 								<img th:src="@{${group.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" />
 								<img th:src="@{/img/add.svg}" class="button-modifier" th:width="${buttonSize / 2}" th:height="${buttonSize / 2}" />

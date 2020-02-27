@@ -199,9 +199,14 @@ public class IndexController {
 		events.save(event);
 		return getRedirect(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate());
 	}
+	@PostMapping("/add-events")
+	public String addEvents(@RequestParam(name = "type") List<String> types, @RequestParam(name = "date") String dateString) {
+		types.forEach(type -> addEvent(type, dateString));
+		return getRedirect(Instant.now().atZone(EUROPE_BERLIN).toLocalDate());
+	}
 
 	@PostMapping("/remove-event")
-	public String addEvent(@RequestParam(name = "id") Long id) {
+	public String removeEvent(@RequestParam(name = "id") Long id) {
 		EventData event = events.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "event " + id + " not found"));
 		events.delete(event);
 		return getRedirect(event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate());

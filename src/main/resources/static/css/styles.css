@@ -29,6 +29,9 @@ input[type=number]::-webkit-outer-spin-button {
 	-webkit-appearance: none;
 	margin: 0;
 }
+label {
+	cursor: pointer;
+}
 .data-form {
 	display: flex;
 	justify-content: center;
@@ -69,9 +72,6 @@ input[type=number]::-webkit-outer-spin-button {
 .add-form {
 	padding: 30px;
 }
-.add-form .do-button {
-	padding: 4px;
-}
 .health-data-button {
 	position: absolute;
 	top: 6px;
@@ -84,6 +84,17 @@ input[type=number]::-webkit-outer-spin-button {
 	justify-content: center;
 	align-items: center;
 }
+.fullscreen-form.with-button {
+	flex-direction: column;
+}
+.fullscreen-form.with-button .adders {
+	display: flex;
+	flex-wrap: wrap;
+	align-content: center;
+	justify-content: center;
+	align-items: center;
+	margin: 2em 0;
+}
 .daterange {
 	white-space: nowrap;
 }
@@ -91,11 +102,19 @@ h1 {
 	font-size: 24px;
 	margin-top: 0;
 }
+.add-form input[type=checkbox]:checked+.do-button {
+	border-color: yellow !important;
+	border-width: 3px;
+	margin: 11px;
+}
 .add-form .do-button {
 	border-width: 2px;
 	margin: 12px;
 	width: 60px;
 	height: 60px;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
 }
 ul {
 	margin: 0;
@@ -187,6 +206,9 @@ h1 {
 }
 .event-image {
 	vertical-align: top;
+}
+.add-event-box {
+	display: none;
 }
 .event-group {
 	background-repeat: no-repeat;
