@@ -163,7 +163,7 @@
 			<column name="group_icon" type="varchar(255)"/>
 		</addColumn>
 		<update tableName="type_groups">
-			<column name="groupable" value="true" />
+			<column name="groupable" valueBoolean="true" />
 			<column name="group_icon" value="/img/plate.svg" />
 			<where>name='food'</where>
 		</update>
