@@ -92,7 +92,7 @@ public class IndexController {
 			LocalDate localDateOfEvent = event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate();
 			Multimap<String, Object> eventsAtThatDay = eventsByDayAndType.computeIfAbsent(localDateOfEvent, day -> LinkedHashMultimap.create());
 			String group = event.getType().getGroup().getName();
-			LocalDateTime minutesToMidnight = localDateOfEvent.atTime(23, 59, 55);
+			LocalDateTime minutesToMidnight = localDateOfEvent.atTime(22, 0, 0);
 			if (minutesToMidnight.toInstant(EUROPE_BERLIN.getRules().getOffset(minutesToMidnight)).isAfter(event.getTimestamp())) {
 				Collection<Object> todayOfThisGroup = eventsAtThatDay.get(group);
 				if (!todayOfThisGroup.isEmpty()) {
