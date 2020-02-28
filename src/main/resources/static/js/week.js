@@ -79,13 +79,9 @@
 	})();
 
 	(function supportInputs() {
-		RegExp.escape= function(s) {
-			return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-		};
-		const weightPattern = new RegExp('^\\d+' + RegExp.escape((1.1).toLocaleString().substring(1, 2)) + '\\d$');
 		function weightInputInputHandler(event) {
 			const input = event.target;
-			if (input.value.match(weightPattern)) {
+			if (input.value.match(/^\d+\.\d$/)) {
 				document.getElementById(input.getAttribute('id').replace(/weight/, 'sugar')).focus();
 			}
 		}
