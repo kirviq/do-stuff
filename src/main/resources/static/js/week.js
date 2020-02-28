@@ -55,7 +55,9 @@
 
 		function revealStuff(event) {
 			const data = getDataFromButton(event.target);
-			document.getElementById(data.showId).className += ' visible';
+			let form = document.getElementById(data.showId);
+			form.className += ' visible';
+			form.querySelector('input:not([type=hidden])').focus();
 		}
 
 		function hideForm(event) {
@@ -74,5 +76,50 @@
 				button.addEventListener('click', hideForm, false);
 			});
 		});
+	})();
+
+	(function supportInputs() {
+		RegExp.escape= function(s) {
+			return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+		};
+		const weightPattern = new RegExp('^\\d+' + RegExp.escape((1.1).toLocaleString().substring(1, 2)) + '\\d$');
+		function weightInputInputHandler(event) {
+			const input = event.target;
+			if (input.value.match(weightPattern)) {
+				document.getElementById(input.getAttribute('id').replace(/weight/, 'sugar')).focus();
+			}
+		}
+		function sugarInputInputHandler(event) {
+			const input = event.target;
+			if (input.value.match(/^\d{3}$/)) {
+				document.getElementById(input.getAttribute('id').replace(/sugar/, 'bpsys')).focus();
+			}
+		}
+		function bpsysInputInputHandler(event) {
+			const input = event.target;
+			if (input.value.match(/^\d{3}$/)) {
+				document.getElementById(input.getAttribute('id').replace(/bpsys/, 'bpdia')).focus();
+			}
+		}
+		function bpdiaInputInputHandler(event) {
+			const input = event.target;
+			if (input.value.match(/^\d{2}$/)) {
+				document.getElementById(input.getAttribute('id').replace(/bpdia/, 'pulse')).focus();
+			}
+		}
+		addEventListener('DOMContentLoaded', () => {
+			Array.prototype.forEach.call(document.querySelectorAll('input[name=weight]'), input => {
+				input.addEventListener('keyup', weightInputInputHandler, false);
+			});
+			Array.prototype.forEach.call(document.querySelectorAll('input[name=sugar]'), input => {
+				input.addEventListener('keyup', sugarInputInputHandler, false);
+			});
+			Array.prototype.forEach.call(document.querySelectorAll('input[name=bpsys]'), input => {
+				input.addEventListener('keyup', bpsysInputInputHandler, false);
+			});
+			Array.prototype.forEach.call(document.querySelectorAll('input[name=bpdia]'), input => {
+				input.addEventListener('keyup', bpdiaInputInputHandler, false);
+			});
+		}, false);
 	})();
 })();

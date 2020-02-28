@@ -53,7 +53,7 @@
 						<span>
 							<input th:id="${'bpsys_' + day.date}" name="bpsys" type="number" step="1" th:value="${day.data != null && day.data.bpSystolic > 0 ? day.data.bpSystolic : ''}" />
 							<span>/</span>
-							<input name="bpdia" type="number" step="1" th:value="${day.data != null && day.data.bpDiastolic > 0 ? day.data.bpDiastolic : ''}" /></span>
+							<input th:id="${'bpdia_' + day.date}" name="bpdia" type="number" step="1" th:value="${day.data != null && day.data.bpDiastolic > 0 ? day.data.bpDiastolic : ''}" /></span>
 						<label th:for="${'pulse_' + day.date}">Puls</label><input th:id="${'pulse_' + day.date}" name="pulse" type="number" step="1" th:value="${day.data != null && day.data.pulse > 0 ? day.data.pulse : ''}" />
 						<button class="save-button">Speichern</button>
 					</div>
