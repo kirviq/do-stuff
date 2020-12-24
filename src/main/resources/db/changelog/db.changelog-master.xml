@@ -157,7 +157,7 @@
 
 	<changeSet id="group-events" author="joachim">
 		<addColumn tableName="type_groups">
-			<column name="groupable" type="boolean" defaultValue="false"><constraints nullable="false"/></column>
+			<column name="groupable" type="boolean" defaultValueBoolean="false"><constraints nullable="false"/></column>
 		</addColumn>
 		<addColumn tableName="type_groups">
 			<column name="group_icon" type="varchar(255)"/>
