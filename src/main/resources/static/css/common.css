@@ -1,0 +1,37 @@
+body {
+    padding: 0;
+    background-color: black;
+    color: silver;
+    font-size: 24px;
+    font-family: sans-serif;
+}
+form {
+    margin: 0;
+    padding: 0;
+}
+button {
+    cursor: pointer;
+    font-size: inherit;
+}
+input {
+    background: silver;
+    border: none;
+    padding: 4px 2px;
+    font-size: inherit;
+}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+label {
+    cursor: pointer;
+}
+h1 {
+	font-size: 24px;
+}
+ul {
+	margin: 0;
+	list-style: none;
+	padding: 0;
+}

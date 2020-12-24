@@ -1,36 +1,12 @@
-body {
-	padding: 0;
-	background-color: black;
-	color: silver;
-	font-size: 24px;
-	font-family: sans-serif;
-}
-form {
+h1 {
 	margin: 0;
-	padding: 0;
 }
 button {
+	color: silver;
 	border: none;
 	padding: 0;
 	margin: 0;
 	background: none;
-	color: silver;
-	cursor: pointer;
-	font-size: inherit;
-}
-input {
-	background: silver;
-	border: none;
-	padding: 4px 2px;
-	font-size: inherit;
-}
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-	-webkit-appearance: none;
-	margin: 0;
-}
-label {
-	cursor: pointer;
 }
 .data-form {
 	display: flex;
@@ -98,10 +74,6 @@ label {
 .daterange {
 	white-space: nowrap;
 }
-h1 {
-	font-size: 24px;
-	margin-top: 0;
-}
 .add-form input[type=checkbox]:checked+.do-button {
 	border-color: yellow !important;
 	border-width: 3px;
@@ -115,11 +87,6 @@ h1 {
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
-}
-ul {
-	margin: 0;
-	list-style: none;
-	padding: 0;
 }
 .events-of-week {
 	display: grid;
@@ -150,9 +117,6 @@ ul {
 	.grid{
 		grid-template-columns: 1fr 1fr 1fr 1fr;
 	}
-}
-h1 {
-	margin: 0;
 }
 .cell-header {
 	margin-bottom: 5px;

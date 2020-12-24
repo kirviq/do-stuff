@@ -1,0 +1,23 @@
+
+button {
+	color: black;
+	background: silver;
+}
+.report-row {
+	display: flex;
+	flex-direction: row;
+	width: 40rem;
+}
+.report-row span {
+	color: black;
+	padding: 2px;
+}
+.report-row span.failed {
+	background: red;
+}
+.report-row span.almost {
+	background: yellow;
+}
+.report-row span.succeded {
+	background: green;
+}
