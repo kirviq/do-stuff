@@ -1,12 +1,20 @@
-
+h1:not(:first-child) {
+	margin-top: 2em;
+}
 button {
 	color: black;
 	background: silver;
 }
+.events-performace {
+	width: 45rem;
+}
+.events-performace td {
+	white-space: nowrap;
+}
 .report-row {
 	display: flex;
 	flex-direction: row;
-	width: 40rem;
+	width: 100%;
 }
 .report-row span {
 	color: black;
@@ -20,4 +28,7 @@ button {
 }
 .report-row span.succeded {
 	background: green;
+}
+#weight-chart {
+	width: 45rem;
 }

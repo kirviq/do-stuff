@@ -9,18 +9,29 @@
 		<link rel="icon" sizes="192x192" th:href="@{/img/favicon-192x192.png}">
 		<link rel="icon" sizes="194x194" th:href="@{/img/favicon-194x194.png}">
 		<link rel="icon" sizes="32x322" th:href="@{/img/favicon-32x32.png}">
-
+		<script type="text/javascript" th:src="@{/js/highcharts.js}"></script>
 <!--		<meta name="mobile-web-app-capable" content="yes">-->
+		<script type="text/javascript" th:inline="javascript">
+			// <![CDATA[
+			const weightData =  /*[[${weightData}]]*/ null;
+			// ]]>
+		</script>
+		<script type="text/javascript" th:src="@{/js/stats.js}"></script>
 	</head>
 	<body>
-		<h1>Wochen w&auml;hlen</h1>
+		<h1>Zeitraum w&auml;hlen</h1>
 		<form method="get" th:action="@{/stats}" >
 			<label for="start-week">Von</label> <input type="week" name="from" id="start-week" th:value="${from}"/>
 			<label for="end-week">bis</label> <input type="week" name="to" id="end-week" th:value="${to}"/>
 			<button type="submit">zeigen</button>
 		</form>
-		<h1>Report</h1>
+
+		<h1>Wochenziele</h1>
 		<table class="events-performace">
+			<colgroup>
+				<col style="width: 0">
+				<col style="width: 100%">
+			</colgroup>
 			<tr th:each="row : ${report}">
 				<td>
 					<img th:src="@{${row.type.icon}}" th:width="${buttonSize}" th:height="${buttonSize}" />:
@@ -33,4 +44,6 @@
 			</tr>
 		</table>
 
+		<h1>Gewicht</h1>
+		<div id="weight-chart"></div>
 </html>

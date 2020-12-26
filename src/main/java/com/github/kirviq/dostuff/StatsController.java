@@ -2,14 +2,12 @@ package com.github.kirviq.dostuff;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.time.temporal.TemporalField;
-import java.time.temporal.WeekFields;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -19,6 +17,7 @@ import java.util.stream.IntStream;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Controller;
@@ -35,11 +34,11 @@ import com.google.common.collect.Multimaps;
 @RequiredArgsConstructor
 public class StatsController {
 	private static final Pattern WEEK_PATTERN = Pattern.compile("(?<year>\\d{4})-W(?<week>\\d+)");
-	private static final TemporalField WEEKDAYS = WeekFields.of(Locale.GERMANY).dayOfWeek();
-	public static final ZoneId GERMAN_TIMEZONE = ZoneId.of("Europe/Berlin");
+	private static final ZoneId GERMAN_TIMEZONE = ZoneId.of("Europe/Berlin");
 	
-	private final EventDataRepository dataRepository;
-	private final EventTypeRepository typeRepository;
+	private final EventDataRepository events;
+	private final EventTypeRepository eventTypes;
+	private final HealthDataRepository healthData;
 	
 	@GetMapping("/stats")
 	private void stats(@RequestParam(required = false) String from, @RequestParam(required = false) String to, Model model) {
@@ -47,15 +46,28 @@ public class StatsController {
 		YearAndWeek endTime = getEndTime(to);
 		model.addAttribute("from", startTime);
 		model.addAttribute("to", endTime);
-		long weeksToReport = ChronoUnit.WEEKS.between(startTime.getMonday(), endTime.getMonday()) + 1;
 		
 		log.info("showing stats from {}, to {}", startTime, endTime);
-		List<EventType> types = typeRepository.getTypesWithGoals();
-		List<EventDataRepository.EventCount> eventCounts = dataRepository.getEventCountsPerWeekInTimeRage(startTime.year, startTime.week, endTime.year, endTime.week, types.stream().map(EventType::getName).collect(Collectors.toSet()));
+		model.addAttribute("report", generateEventsReport(startTime, endTime));
+		model.addAttribute("weightData", getWeightData(startTime, endTime));
+	}
+	
+	@SneakyThrows
+	private Object getWeightData(YearAndWeek startTime, YearAndWeek endTime) {
+		return healthData.findHealthDataByDateBetween(startTime.getMonday(), endTime.getSonday()).stream()
+				.filter(data -> data.getWeight() != null && data.getWeight().intValue() > 0)
+				.map(data -> new Object[]{data.getDate().atTime(LocalTime.of(12, 0)).atZone(GERMAN_TIMEZONE).toEpochSecond() * 1000, data.getWeight()})
+				.collect(Collectors.toList());
+	}
+	
+	private List<ReportRow> generateEventsReport(YearAndWeek startTime, YearAndWeek endTime) {
+		long weeksToReport = ChronoUnit.WEEKS.between(startTime.getMonday(), endTime.getMonday()) + 1;
+		List<EventType> types = eventTypes.getTypesWithGoals();
+		List<EventDataRepository.EventCount> eventCounts = events.getEventCountsPerWeekInTimeRage(startTime.year, startTime.week, endTime.year, endTime.week, types.stream().map(EventType::getName).collect(Collectors.toSet()));
 		log.info("found {} entries", eventCounts.size());
 		
 		Multimap<String, EventDataRepository.EventCount> countsByType = eventCounts.stream().collect(Multimaps.toMultimap(EventDataRepository.EventCount::getType, Function.identity(), HashMultimap::create));
-		List<ReportRow> report = types.stream()
+		return types.stream()
 				.map(type -> {
 					ReportRow row = new ReportRow();
 					row.type = type;
@@ -68,7 +80,6 @@ public class StatsController {
 					return row;
 				})
 				.collect(Collectors.toList());
-		model.addAttribute("report", report);
 	}
 	
 	private static void countCount(EventType type, ReportRow row, int cnt) {
@@ -101,6 +112,13 @@ public class StatsController {
 		private LocalDate getMonday() {
 			return LocalDate.now()
 					.with(TemporalAdjusters.previous(DayOfWeek.MONDAY))
+					.withYear(year)
+					.with(ChronoField.ALIGNED_WEEK_OF_YEAR, week);
+		}
+		
+		private LocalDate getSonday() {
+			return LocalDate.now()
+					.with(TemporalAdjusters.next(DayOfWeek.SUNDAY))
 					.withYear(year)
 					.with(ChronoField.ALIGNED_WEEK_OF_YEAR, week);
 		}
