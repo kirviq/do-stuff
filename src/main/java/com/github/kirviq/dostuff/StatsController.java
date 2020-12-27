@@ -8,6 +8,7 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -17,7 +18,7 @@ import java.util.stream.IntStream;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -39,6 +43,15 @@ public class StatsController {
 	private final EventDataRepository events;
 	private final EventTypeRepository eventTypes;
 	private final HealthDataRepository healthData;
+	private final LoadingCache<TimeRange, List<HealthData>> healthCache = CacheBuilder.newBuilder()
+			.expireAfterWrite(1, TimeUnit.SECONDS)
+			.build(new CacheLoader<TimeRange, List<HealthData>>() {
+				@Override
+				public List<HealthData> load(TimeRange range) throws Exception {
+					return healthData.findHealthDataByDateBetween(range.start, range.end);
+				}
+			});
+	
 	
 	@GetMapping("/stats")
 	private void stats(@RequestParam(required = false) String from, @RequestParam(required = false) String to, Model model) {
@@ -50,14 +63,23 @@ public class StatsController {
 		log.info("showing stats from {}, to {}", startTime, endTime);
 		model.addAttribute("report", generateEventsReport(startTime, endTime));
 		model.addAttribute("weightData", getWeightData(startTime, endTime));
+		model.addAttribute("sugarData", getSugarData(startTime, endTime));
 	}
 	
-	@SneakyThrows
 	private Object getWeightData(YearAndWeek startTime, YearAndWeek endTime) {
-		return healthData.findHealthDataByDateBetween(startTime.getMonday(), endTime.getSonday()).stream()
+		List<Object[]> weightData = healthCache.getUnchecked(new TimeRange(startTime.getMonday(), endTime.getSunday())).stream()
 				.filter(data -> data.getWeight() != null && data.getWeight().intValue() > 0)
-				.map(data -> new Object[]{data.getDate().atTime(LocalTime.of(12, 0)).atZone(GERMAN_TIMEZONE).toEpochSecond() * 1000, data.getWeight()})
+				.map(data -> new Object[]{getMidday(data.getDate()), data.getWeight()})
 				.collect(Collectors.toList());
+		return weightData.isEmpty() ? null : weightData;
+	}
+	
+	private Object getSugarData(YearAndWeek startTime, YearAndWeek endTime) {
+		List<Object[]> sugarData = healthCache.getUnchecked(new TimeRange(startTime.getMonday(), endTime.getSunday())).stream()
+				.filter(data -> data.getBloodsugar() > 0)
+				.map(data -> new Object[]{getMidday(data.getDate()), data.getBloodsugar()})
+				.collect(Collectors.toList());
+		return sugarData.isEmpty() ? null : sugarData;
 	}
 	
 	private List<ReportRow> generateEventsReport(YearAndWeek startTime, YearAndWeek endTime) {
@@ -98,25 +120,25 @@ public class StatsController {
 	
 	@Getter
 	public static class ReportRow {
+		
 		EventType type;
+		
 		int failed;
 		int almost;
 		int succeded;
 	}
-	
 	@RequiredArgsConstructor
 	private static class YearAndWeek {
 		private final int year;
-		private final int week;
 		
+		private final int week;
 		private LocalDate getMonday() {
 			return LocalDate.now()
 					.with(TemporalAdjusters.previous(DayOfWeek.MONDAY))
 					.withYear(year)
 					.with(ChronoField.ALIGNED_WEEK_OF_YEAR, week);
 		}
-		
-		private LocalDate getSonday() {
+		private LocalDate getSunday() {
 			return LocalDate.now()
 					.with(TemporalAdjusters.next(DayOfWeek.SUNDAY))
 					.withYear(year)
@@ -127,6 +149,16 @@ public class StatsController {
 		public String toString() {
 			return year + "-W" + (week < 10 ? ("0" + week) : week);
 		}
+		
+		
+	}
+	private static long getMidday(LocalDate date) {
+		return date.atTime(LocalTime.of(12, 0)).atZone(GERMAN_TIMEZONE).toEpochSecond() * 1000;
+	}
+	@Value
+	private static class TimeRange {
+		LocalDate start;
+		LocalDate end;
 	}
 	private YearAndWeek getStartTime(String weekString) {
 		if (weekString == null) {
@@ -152,4 +184,6 @@ public class StatsController {
 		}
 		return new YearAndWeek(Integer.parseInt(matcher.group("year")), Integer.parseInt(matcher.group("week")));
 	}
+
 }
+

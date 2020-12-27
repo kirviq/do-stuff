@@ -11,9 +11,14 @@
 		<link rel="icon" sizes="32x322" th:href="@{/img/favicon-32x32.png}">
 		<script type="text/javascript" th:src="@{/js/highcharts.js}"></script>
 <!--		<meta name="mobile-web-app-capable" content="yes">-->
-		<script type="text/javascript" th:inline="javascript">
+		<script type="text/javascript" th:inline="javascript" th:if="${weightData != null}">
 			// <![CDATA[
 			const weightData =  /*[[${weightData}]]*/ null;
+			// ]]>
+		</script>
+		<script type="text/javascript" th:inline="javascript" th:if="${sugarData != null}">
+			// <![CDATA[
+			const sugarData =  /*[[${sugarData}]]*/ null;
 			// ]]>
 		</script>
 		<script type="text/javascript" th:src="@{/js/stats.js}"></script>
@@ -43,7 +48,12 @@
 				</td>
 			</tr>
 		</table>
-
-		<h1>Gewicht</h1>
-		<div id="weight-chart"></div>
+		<section th:if="${weightData != null}">
+			<h1>Gewicht</h1>
+			<div id="weight-chart" class="chart"></div>
+		</section>
+		<section th:if="${sugarData != null}">
+			<h1>Blutzucker</h1>
+			<div id="sugar-chart" class="chart"></div>
+		</section>
 </html>

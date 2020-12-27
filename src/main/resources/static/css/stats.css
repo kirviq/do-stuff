@@ -29,6 +29,6 @@ button {
 .report-row span.succeded {
 	background: green;
 }
-#weight-chart {
+.chart {
 	width: 45rem;
 }
