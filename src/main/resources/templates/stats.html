@@ -21,6 +21,13 @@
 			const sugarData =  /*[[${sugarData}]]*/ null;
 			// ]]>
 		</script>
+		<script type="text/javascript" th:inline="javascript" th:if="${bpSysData != null && bpDiaData != null && pulseData != null}">
+			// <![CDATA[
+			const bpSysData =  /*[[${bpSysData}]]*/ null;
+			const bpDiaData =  /*[[${bpDiaData}]]*/ null;
+			const pulseData =  /*[[${pulseData}]]*/ null;
+			// ]]>
+		</script>
 		<script type="text/javascript" th:src="@{/js/stats.js}"></script>
 	</head>
 	<body>
@@ -55,5 +62,9 @@
 		<section th:if="${sugarData != null}">
 			<h1>Blutzucker</h1>
 			<div id="sugar-chart" class="chart"></div>
+		</section>
+		<section th:if="${bpSysData != null}">
+			<h1>Blutdruck</h1>
+			<div id="bp-chart" class="chart"></div>
 		</section>
 </html>
