@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +41,12 @@ public class StatsController {
 	private final HealthDataRepository healthData;
 	
 	@GetMapping("/stats")
-	private void stats(@RequestParam(required = false) String from, @RequestParam(required = false) String to, Model model) {
+	private void stats(
+			@RequestParam(required = false) String from,
+			@RequestParam(required = false) String to,
+			@RequestParam(required = false, defaultValue = "false") boolean flatten,
+			Model model) {
+		
 		YearAndWeek startTime = getStartTime(from);
 		YearAndWeek endTime = getEndTime(to);
 		model.addAttribute("from", startTime);
@@ -50,18 +56,34 @@ public class StatsController {
 		model.addAttribute("report", generateEventsReport(startTime, endTime));
 		
 		List<HealthData> healthValues = healthData.findHealthDataByDateBetween(startTime.getMonday(), endTime.getSunday());
-		model.addAttribute("weightData", getHealthData(healthValues, HealthData::getWeight));
-		model.addAttribute("sugarData", getHealthData(healthValues, HealthData::getBloodsugar));
-		model.addAttribute("bpSysData", getHealthData(healthValues, HealthData::getBpSystolic));
-		model.addAttribute("bpDiaData", getHealthData(healthValues, HealthData::getBpDiastolic));
-		model.addAttribute("pulseData", getHealthData(healthValues, HealthData::getPulse));
+		
+		Consumer<List<Object[]>> flattener = flatten ? this::getAverage : ignored -> { /* do nothing */};
+		model.addAttribute("weightData", getHealthData(healthValues, HealthData::getWeight, flattener));
+		model.addAttribute("sugarData", getHealthData(healthValues, HealthData::getBloodsugar, flattener));
+		model.addAttribute("bpSysData", getHealthData(healthValues, HealthData::getBpSystolic, flattener));
+		model.addAttribute("bpDiaData", getHealthData(healthValues, HealthData::getBpDiastolic, flattener));
+		model.addAttribute("pulseData", getHealthData(healthValues, HealthData::getPulse, flattener));
 	}
 	
-	private List<Object[]> getHealthData(List<HealthData> values, Function<HealthData, Number> extractor) {
+	private void getAverage(List<Object[]> data) {
+		for (int i = 0; i < data.size(); i++) {
+			if (i < 2 || i > data.size() - 3) {
+				continue;
+			}
+			Object[] current = data.get(i);
+			current[1] = (getVal(data.get(i - 2)) + getVal(data.get(i - 1)) + getVal(current) + getVal(data.get(i + 1)) + getVal(data.get(i + 2))) / 5;
+		}
+	}
+	private float getVal(Object[] point) {
+		return ((Number) point[1]).floatValue();
+	}
+	
+	private List<Object[]> getHealthData(List<HealthData> values, Function<HealthData, Number> extractor, Consumer<List<Object[]>> flattener) {
 		List<Object[]> data = values.stream()
 				.filter(value -> extractor.apply(value) != null && extractor.apply(value).floatValue() > 0)
 				.map(value -> new Object[]{getMidday(value.getDate()), extractor.apply(value)})
 				.collect(Collectors.toList());
+		flattener.accept(data);
 		return data.isEmpty() ? null : data;
 	}
 	

@@ -35,6 +35,9 @@
 		<form method="get" th:action="@{/stats}" >
 			<label for="start-week">Von</label> <input type="week" name="from" id="start-week" th:value="${from}"/>
 			<label for="end-week">bis</label> <input type="week" name="to" id="end-week" th:value="${to}"/>
+			<br />
+			<label><input type="checkbox" name="flatten" value="true" th:checked="${param.flatten != null && param.flatten[0] == 'true'}">Kurven gl&auml;tten</label>
+			<br />
 			<button type="submit">zeigen</button>
 		</form>
 
