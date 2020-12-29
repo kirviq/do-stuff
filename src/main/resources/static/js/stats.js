@@ -1,5 +1,12 @@
-if (weightData) {
-	addEventListener('DOMContentLoaded', () => {
+addEventListener('DOMContentLoaded', () => {
+	const min = [weightData && weightData[0][0], sugarData && sugarData[0][0], bpSysData && bpSysData[0][0], bpDiaData && bpDiaData[0][0], pulseData && pulseData[0][0]]
+		.filter(val => val !== undefined)
+		.reduce((v1, v2) => Math.min(v1, v2));
+	const max = [weightData && weightData[weightData.length - 1][0], sugarData && sugarData[sugarData.length - 1][0], bpSysData && bpSysData[bpSysData.length - 1][0], bpDiaData && bpDiaData[bpDiaData.length - 1][0], pulseData && pulseData[pulseData.length - 1][0]]
+		.filter(val => val !== undefined)
+		.reduce((v1, v2) => Math.max(v1, v2));
+
+	if (weightData) {
 		Highcharts.chart('weight-chart', {
 			chart: {
 				zoomType: 'x',
@@ -12,6 +19,8 @@ if (weightData) {
 			},
 			xAxis: {
 				type: 'datetime',
+				min,
+				max,
 				labels: {
 					style: {
 						color: '#c0c0c0'
@@ -48,10 +57,8 @@ if (weightData) {
 				data: weightData
 			}]
 		});
-	}, false);
-}
-if (sugarData) {
-	addEventListener('DOMContentLoaded', () => {
+	}
+	if (sugarData) {
 		Highcharts.chart('sugar-chart', {
 			chart: {
 				zoomType: 'x',
@@ -64,6 +71,8 @@ if (sugarData) {
 			},
 			xAxis: {
 				type: 'datetime',
+				min,
+				max,
 				labels: {
 					style: {
 						color: '#c0c0c0'
@@ -100,10 +109,8 @@ if (sugarData) {
 				data: sugarData
 			}]
 		});
-	}, false);
-}
-if (bpSysData) {
-	addEventListener('DOMContentLoaded', () => {
+	}
+	if (bpSysData) {
 		Highcharts.chart('bp-chart', {
 			chart: {
 				zoomType: 'x',
@@ -116,35 +123,25 @@ if (bpSysData) {
 			},
 			xAxis: {
 				type: 'datetime',
+				min,
+				max,
 				labels: {
 					style: {
 						color: '#c0c0c0'
 					}
 				}
 			},
-			yAxis: [
-				{
-					title: {
-						text: 'Blutdruck (sys/dia)'
-					},
-					gridLineColor: '#202020',
-					labels: {
-						style: {
-							color: '#c0c0c0'
-						}
+			yAxis: {
+				title: {
+					text: 'Blutdruck (sys/dia) | Herzfrequenz (min\u207B\u00B9)'
+				},
+				gridLineColor: '#202020',
+				labels: {
+					style: {
+						color: '#c0c0c0'
 					}
-				}, {
-					title: {
-						text: 'Herzfrequenz (min\u207B\u00B9)'
-					},
-					gridLineColor: '#202020',
-					labels: {
-						style: {
-							color: '#c0c0c0'
-						}
-					},
-					opposite: true
-				}],
+				}
+			},
 			tooltip: {
 				formatter() {
 					const date = Highcharts.dateFormat('%a, %Y-%m-%d %H:%M', this.x);
@@ -155,16 +152,6 @@ if (bpSysData) {
 				crosshairs: true,
 				shared: true
 			},
-			plotOptions: {
-				// series: {
-				// 	animation: false,
-				// 		marker: {
-				// 		radius: 3
-				// 	},
-				// 	fillopacity: 0.1
-				// }
-			},
-
 			series: [{
 				name: 'Systolisch',
 				color: 'red',
@@ -179,5 +166,5 @@ if (bpSysData) {
 				data: pulseData
 			}]
 		});
-	}, false);
-}
+	}
+}, false);
