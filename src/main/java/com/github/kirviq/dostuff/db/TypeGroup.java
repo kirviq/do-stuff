@@ -1,9 +1,9 @@
-package com.github.kirviq.dostuff;
+package com.github.kirviq.dostuff.db;
 
 import lombok.Data;
 
 import javax.persistence.*;
-import java.time.Instant;
+
 import java.util.List;
 import java.util.stream.Collectors;
 

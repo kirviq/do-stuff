@@ -173,4 +173,146 @@
 		</update>
 	</changeSet>
 
+	<changeSet id="flexible-goals-create-tables" author="joachim">
+		<createTable tableName="goals">
+			<column name="name" type="varchar(255)">
+				<constraints primaryKey="true"/>
+			</column>
+			<column name="type" type="varchar(255)" />
+			<column name="start" type="date" />
+			<column name="end" type="date" />
+			<column name="icon" type="varchar(255)" />
+			<column name="order" type="int" />
+			<column name="desired_min_per_week" type="int" />
+			<column name="desired_max_per_week" type="int" />
+			<column name="required_min_per_week" type="int" />
+			<column name="required_max_per_week" type="int" />
+		</createTable>
+		<createTable tableName="event_count_goal_types">
+			<column name="id" type="bigint" autoIncrement="true">
+				<constraints primaryKey="true" />
+			</column>
+			<column name="goal_name" type="varchar(255)" />
+			<column name="type_name" type="varchar(255)" />
+		</createTable>
+		<addUniqueConstraint constraintName="u_goal_type" tableName="event_count_goal_types" columnNames="goal_name,type_name" />
+	</changeSet>
+
+	<changeSet id="flexible-goals-add_fks" author="joachim">
+		<addForeignKeyConstraint constraintName="fk_mapping_types"
+				baseTableName="event_count_goal_types" baseColumnNames="type_name"
+				referencedTableName="types" referencedColumnNames="name" />
+		<addForeignKeyConstraint constraintName="fk_mapping_goals"
+				baseTableName="event_count_goal_types" baseColumnNames="goal_name"
+				referencedTableName="goals" referencedColumnNames="name" />
+	</changeSet>
+
+	<changeSet id="flexible-goals-insert-data" author="joachim">
+		<insert tableName="goals">
+			<column name="name" value="eat_veggies" />
+			<column name="type" value="event_count" />
+			<column name="start" valueDate="2020-01-01" />
+			<column name="icon" value="/img/broccoli.svg" />
+			<column name="order" value="100" />
+			<column name="required_min_per_week" valueNumeric="8" />
+			<column name="desired_min_per_week" valueNumeric="10" />
+		</insert>
+		<insert tableName="event_count_goal_types">
+			<column name="goal_name" value="eat_veggies" />
+			<column name="type_name" value="fruits" />
+		</insert>
+		<insert tableName="event_count_goal_types">
+			<column name="goal_name" value="eat_veggies" />
+			<column name="type_name" value="vegetables" />
+		</insert>
+
+		<insert tableName="goals">
+			<column name="name" value="less_meat" />
+			<column name="type" value="event_count" />
+			<column name="start" valueDate="2020-01-01" />
+			<column name="icon" value="/img/steak.svg" />
+			<column name="order" value="200" />
+			<column name="desired_max_per_week" valueNumeric="2" />
+			<column name="required_max_per_week" valueNumeric="4" />
+		</insert>
+		<insert tableName="event_count_goal_types">
+			<column name="goal_name" value="less_meat" />
+			<column name="type_name" value="meat" />
+		</insert>
+
+		<insert tableName="goals">
+			<column name="name" value="dont_sin" />
+			<column name="type" value="event_count" />
+			<column name="start" valueDate="2020-01-01" />
+			<column name="end" valueDate="2020-12-31" />
+			<column name="icon" value="/img/beer.svg" />
+			<column name="order" value="300" />
+			<column name="required_max_per_week" valueNumeric="2" />
+		</insert>
+		<insert tableName="event_count_goal_types">
+			<column name="goal_name" value="dont_sin" />
+			<column name="type_name" value="alcohol" />
+		</insert>
+		<insert tableName="event_count_goal_types">
+			<column name="goal_name" value="dont_sin" />
+			<column name="type_name" value="sweets" />
+		</insert>
+
+		<insert tableName="goals">
+			<column name="name" value="take_meds" />
+			<column name="type" value="event_count" />
+			<column name="start" valueDate="2020-01-01" />
+			<column name="icon" value="/img/pills.svg" />
+			<column name="order" value="400" />
+			<column name="required_min_per_week" valueNumeric="12" />
+			<column name="desired_min_per_week" valueNumeric="14" />
+		</insert>
+		<insert tableName="event_count_goal_types">
+			<column name="goal_name" value="take_meds" />
+			<column name="type_name" value="meds" />
+		</insert>
+
+		<insert tableName="goals">
+			<column name="name" value="walk" />
+			<column name="type" value="event_count" />
+			<column name="start" valueDate="2020-01-01" />
+			<column name="icon" value="/img/relaxing-walk.svg" />
+			<column name="order" value="500" />
+			<column name="required_min_per_week" valueNumeric="3" />
+			<column name="desired_min_per_week" valueNumeric="5" />
+		</insert>
+		<insert tableName="event_count_goal_types">
+			<column name="goal_name" value="walk" />
+			<column name="type_name" value="move" />
+		</insert>
+
+		<insert tableName="goals">
+			<column name="name" value="less_sweets" />
+			<column name="type" value="event_count" />
+			<column name="start" valueDate="2021-01-01" />
+			<column name="icon" value="/img/sorbet.svg" />
+			<column name="order" value="270" />
+			<column name="required_max_per_week" valueNumeric="2" />
+		</insert>
+		<insert tableName="event_count_goal_types">
+			<column name="goal_name" value="less_sweets" />
+			<column name="type_name" value="sweets" />
+		</insert>
+
+		<insert tableName="goals">
+			<column name="name" value="drink_less" />
+			<column name="type" value="event_count" />
+			<column name="start" valueDate="2021-01-01" />
+			<column name="icon" value="/img/beer.svg" />
+			<column name="order" value="330" />
+			<column name="desired_max_per_week" valueNumeric="2" />
+			<column name="required_max_per_week" valueNumeric="3" />
+		</insert>
+		<insert tableName="event_count_goal_types">
+			<column name="goal_name" value="drink_less" />
+			<column name="type_name" value="alcohol" />
+		</insert>
+
+	</changeSet>
+
 </databaseChangeLog>

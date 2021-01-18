@@ -1,4 +1,4 @@
-package com.github.kirviq.dostuff;
+package com.github.kirviq.dostuff.db;
 
 import lombok.Data;
 

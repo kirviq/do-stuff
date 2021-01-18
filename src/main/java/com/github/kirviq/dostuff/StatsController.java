@@ -25,6 +25,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.github.kirviq.dostuff.db.EventDataRepository;
+import com.github.kirviq.dostuff.db.EventType;
+import com.github.kirviq.dostuff.db.EventTypeRepository;
+import com.github.kirviq.dostuff.db.HealthData;
+import com.github.kirviq.dostuff.db.HealthDataRepository;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;

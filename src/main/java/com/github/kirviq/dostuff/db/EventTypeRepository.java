@@ -1,9 +1,11 @@
-package com.github.kirviq.dostuff;
+package com.github.kirviq.dostuff.db;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+
+import com.github.kirviq.dostuff.db.EventType;
 
 public interface EventTypeRepository extends CrudRepository<EventType, String> {
 	@Query("SELECT t " +

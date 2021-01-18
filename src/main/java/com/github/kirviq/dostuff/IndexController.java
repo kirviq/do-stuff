@@ -1,5 +1,13 @@
 package com.github.kirviq.dostuff;
 
+import com.github.kirviq.dostuff.db.EventData;
+import com.github.kirviq.dostuff.db.EventDataRepository;
+import com.github.kirviq.dostuff.db.EventGroupRepository;
+import com.github.kirviq.dostuff.db.EventType;
+import com.github.kirviq.dostuff.db.EventTypeRepository;
+import com.github.kirviq.dostuff.db.HealthData;
+import com.github.kirviq.dostuff.db.HealthDataRepository;
+import com.github.kirviq.dostuff.db.TypeGroup;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import lombok.Data;
