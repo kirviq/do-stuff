@@ -6,18 +6,21 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.IsoFields;
+import java.time.temporal.WeekFields;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Controller;
@@ -25,14 +28,16 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.github.kirviq.dostuff.db.EventDataRepository;
-import com.github.kirviq.dostuff.db.EventType;
-import com.github.kirviq.dostuff.db.EventTypeRepository;
-import com.github.kirviq.dostuff.db.HealthData;
-import com.github.kirviq.dostuff.db.HealthDataRepository;
-import com.google.common.collect.HashMultimap;
+import com.github.kirviq.dostuff.events.EventDataRepository;
+import com.github.kirviq.dostuff.events.EventTypeRepository;
+import com.github.kirviq.dostuff.goals.Goal;
+import com.github.kirviq.dostuff.goals.GoalRepository;
+import com.github.kirviq.dostuff.goals.Week;
+import com.github.kirviq.dostuff.goals.WeekJudgement;
+import com.github.kirviq.dostuff.healthData.HealthData;
+import com.github.kirviq.dostuff.healthData.HealthDataRepository;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 
 @Slf4j
 @Controller
@@ -44,6 +49,7 @@ public class StatsController {
 	private final EventDataRepository events;
 	private final EventTypeRepository eventTypes;
 	private final HealthDataRepository healthData;
+	private final GoalRepository goals;
 	
 	@GetMapping("/stats")
 	private void stats(
@@ -93,44 +99,50 @@ public class StatsController {
 	}
 	
 	private List<ReportRow> generateEventsReport(YearAndWeek startTime, YearAndWeek endTime) {
-		long weeksToReport = ChronoUnit.WEEKS.between(startTime.getMonday(), endTime.getMonday()) + 1;
-		List<EventType> types = eventTypes.getTypesWithGoals();
-		List<EventDataRepository.EventCount> eventCounts = events.getEventCountsPerWeekInTimeRage(startTime.year, startTime.week, endTime.year, endTime.week, types.stream().map(EventType::getName).collect(Collectors.toSet()));
-		log.info("found {} entries", eventCounts.size());
-		
-		Multimap<String, EventDataRepository.EventCount> countsByType = eventCounts.stream().collect(Multimaps.toMultimap(EventDataRepository.EventCount::getType, Function.identity(), HashMultimap::create));
-		return types.stream()
-				.map(type -> {
-					ReportRow row = new ReportRow();
-					row.type = type;
-					AtomicLong weeksMissing = new AtomicLong(weeksToReport);
-					countsByType.get(type.getName()).forEach(count -> {
-						weeksMissing.decrementAndGet();
-						countCount(type, row, count.getCnt());
-					});
-					IntStream.range(0, weeksMissing.intValue()).forEach(ignored -> countCount(type, row, 0));
-					return row;
+		Multimap<Goal, WeekJudgement> judgements = ArrayListMultimap.create();
+		List<Week> weeks = getWeeks(startTime, endTime);
+		for (Week week : weeks) {
+			List<Goal> goalsThisWeek = goals.findGoalsInRange(week.getStart(), week.getEnd());
+			goalsThisWeek.stream().map(g -> g.judge(week)).forEach(j -> judgements.put(j.getGoal(), j));
+		}
+		return judgements.keySet().stream()
+				.sorted(Comparator.comparing(Goal::getOrder))
+				.map(g -> {
+					int failed = 0, almost = 0, succeeded = 0;
+					for (WeekJudgement j : judgements.get(g)) {
+						switch (j.getStatus()) {
+							case GOOD:
+								succeeded++;
+								break;
+							case WARN:
+								almost++;
+								break;
+							case TROUBLE:
+								failed++;
+								break;
+							default:
+								// do nothing
+						}
+					}
+					return new ReportRow(g, failed, almost, succeeded);
 				})
 				.collect(Collectors.toList());
 	}
 	
-	private static void countCount(EventType type, ReportRow row, int cnt) {
-		if (type.getRequiredMinPerWeek() >= 0 && cnt < type.getRequiredMinPerWeek()) {
-			row.failed++;
-		} else if (type.getDesiredMinPerWeek() >= 0 && cnt < type.getDesiredMinPerWeek()) {
-			row.almost++;
-		} else if (type.getRequiredMaxPerWeek() >= 0 && cnt > type.getRequiredMaxPerWeek()) {
-			row.failed++;
-		} else if (type.getDesiredMaxPerWeek() >= 0 && cnt > type.getDesiredMaxPerWeek()) {
-			row.almost++;
-		} else {
-			row.succeded++;
+	private static final WeekFields WEEK_FIELDS = WeekFields.of(Locale.GERMANY);
+	private List<Week> getWeeks(YearAndWeek startTime, YearAndWeek endTime) {
+		List<Week> weeks = new ArrayList<>();
+		LocalDate end = endTime.getSunday();
+		for (LocalDate currentStart = startTime.getMonday(); currentStart.isBefore(end); currentStart = currentStart.plusWeeks(1)) {
+			weeks.add(new Week(currentStart.get(WEEK_FIELDS.weekOfYear()), currentStart, currentStart.plusDays(6), Collections.emptyList()));
 		}
+		return weeks;
 	}
 	
-	@Getter
+	
+	@Value
 	public static class ReportRow {
-		EventType type;
+		Goal goal;
 		int failed;
 		int almost;
 		int succeded;
@@ -142,16 +154,22 @@ public class StatsController {
 		
 		private final int week;
 		private LocalDate getMonday() {
-			return LocalDate.now()
-					.with(TemporalAdjusters.previous(DayOfWeek.MONDAY))
-					.withYear(year)
-					.with(ChronoField.ALIGNED_WEEK_OF_YEAR, week);
+			return LocalDate.of(year, 2, 1)
+					.with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, week)
+					.with(ChronoField.DAY_OF_WEEK, DayOfWeek.MONDAY.getValue());
+//			return LocalDate.now()
+//					.with(TemporalAdjusters.previous(DayOfWeek.MONDAY))
+//					.withYear(year)
+//					.with(ChronoField.ALIGNED_WEEK_OF_YEAR, week);
 		}
 		private LocalDate getSunday() {
-			return LocalDate.now()
-					.with(TemporalAdjusters.next(DayOfWeek.SUNDAY))
-					.withYear(year)
-					.with(ChronoField.ALIGNED_WEEK_OF_YEAR, week);
+			return LocalDate.of(year, 2, 1)
+					.with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, week)
+					.with(ChronoField.DAY_OF_WEEK, DayOfWeek.SUNDAY.getValue());
+//			return LocalDate.now()
+//					.with(TemporalAdjusters.next(DayOfWeek.SUNDAY))
+//					.withYear(year)
+//					.with(ChronoField.ALIGNED_WEEK_OF_YEAR, week);
 		}
 		
 		@Override

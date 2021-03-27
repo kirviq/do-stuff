@@ -49,7 +49,7 @@
 			</colgroup>
 			<tr th:each="row : ${report}">
 				<td>
-					<img th:src="@{${row.type.icon}}" th:width="${buttonSize}" th:height="${buttonSize}" />:
+					<img th:src="@{${row.goal.icon}}" th:width="${buttonSize}" th:height="${buttonSize}" th:title="${row.goal.name}"/>:
 				</td>
 				<td class="report-row">
 					<span class="failed" th:text="${row.failed}" th:if="${row.failed > 0}" th:style="'flex-grow:' + ${row.failed} "/>

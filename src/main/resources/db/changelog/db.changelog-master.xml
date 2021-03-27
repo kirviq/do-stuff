@@ -194,6 +194,7 @@
 			</column>
 			<column name="goal_name" type="varchar(255)" />
 			<column name="type_name" type="varchar(255)" />
+			<column name="order" type="int" />
 		</createTable>
 		<addUniqueConstraint constraintName="u_goal_type" tableName="event_count_goal_types" columnNames="goal_name,type_name" />
 	</changeSet>
@@ -219,11 +220,13 @@
 		</insert>
 		<insert tableName="event_count_goal_types">
 			<column name="goal_name" value="eat_veggies" />
-			<column name="type_name" value="fruits" />
+			<column name="type_name" value="vegetables" />
+			<column name="order" valueNumeric="100" />
 		</insert>
 		<insert tableName="event_count_goal_types">
 			<column name="goal_name" value="eat_veggies" />
-			<column name="type_name" value="vegetables" />
+			<column name="type_name" value="fruits" />
+			<column name="order" valueNumeric="200" />
 		</insert>
 
 		<insert tableName="goals">
@@ -238,6 +241,7 @@
 		<insert tableName="event_count_goal_types">
 			<column name="goal_name" value="less_meat" />
 			<column name="type_name" value="meat" />
+			<column name="order" valueNumeric="100" />
 		</insert>
 
 		<insert tableName="goals">
@@ -252,10 +256,12 @@
 		<insert tableName="event_count_goal_types">
 			<column name="goal_name" value="dont_sin" />
 			<column name="type_name" value="alcohol" />
+			<column name="order" valueNumeric="100" />
 		</insert>
 		<insert tableName="event_count_goal_types">
 			<column name="goal_name" value="dont_sin" />
 			<column name="type_name" value="sweets" />
+			<column name="order" valueNumeric="200" />
 		</insert>
 
 		<insert tableName="goals">
@@ -270,6 +276,7 @@
 		<insert tableName="event_count_goal_types">
 			<column name="goal_name" value="take_meds" />
 			<column name="type_name" value="meds" />
+			<column name="order" valueNumeric="100" />
 		</insert>
 
 		<insert tableName="goals">
@@ -284,6 +291,7 @@
 		<insert tableName="event_count_goal_types">
 			<column name="goal_name" value="walk" />
 			<column name="type_name" value="move" />
+			<column name="order" valueNumeric="100" />
 		</insert>
 
 		<insert tableName="goals">
@@ -297,6 +305,7 @@
 		<insert tableName="event_count_goal_types">
 			<column name="goal_name" value="less_sweets" />
 			<column name="type_name" value="sweets" />
+			<column name="order" valueNumeric="100" />
 		</insert>
 
 		<insert tableName="goals">
@@ -311,8 +320,29 @@
 		<insert tableName="event_count_goal_types">
 			<column name="goal_name" value="drink_less" />
 			<column name="type_name" value="alcohol" />
+			<column name="order" valueNumeric="100" />
 		</insert>
+	</changeSet>
 
+	<changeSet id="walk_more" author="joachim">
+		<update tableName="goals">
+			<column name="end" valueDate="2020-12-31" />
+			<where>name = 'walk'</where>
+		</update>
+		<insert tableName="goals">
+			<column name="name" value="walk_more" />
+			<column name="type" value="event_count" />
+			<column name="start" valueDate="2021-01-01" />
+			<column name="icon" value="/img/relaxing-walk" />
+			<column name="order" valueNumeric="600" />
+			<column name="desired_min_per_week" valueNumeric="7" />
+			<column name="required_min_per_week" valueNumeric="6" />
+		</insert>
+		<insert tableName="event_count_goal_types">
+			<column name="goal_name" value="walk_more" />
+			<column name="type_name" value="move" />
+			<column name="order" valueNumeric="100" />
+		</insert>
 	</changeSet>
 
 </databaseChangeLog>

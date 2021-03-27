@@ -31,10 +31,9 @@
 					<span class="daterange" th:text="${#temporals.format(week.start, 'dd.MM.') + ' - ' + #temporals.format(week.end, 'dd.MM.')}"></span>
 				</h1>
 				<ul class="events-of-week">
-					<li th:each="stat : ${week.stats}" th:if="${stat.status != 'NONE'}" th:class="${stat.status}">
-						<img th:src="@{${stat.type.icon}}" th:width="${buttonSize / 1.5}" th:height="${buttonSize / 1.5}" />:
-						<span th:text="${stat.count}"></span>
-						<span th:text="${stat.warning}" th:if="stat.status != 'OK'"></span>
+					<li th:each="judgement : ${week.judgements}" th:if="${judgement.status != 'NONE'}" th:class="${judgement.status}">
+						<img th:src="@{${judgement.goal.icon}}" th:width="${buttonSize / 1.5}" th:height="${buttonSize / 1.5}" />:
+						<span th:text="${judgement.message}"></span>
 					</li>
 				</ul>
 			</div>
@@ -110,7 +109,7 @@
 										<img th:src="@{${part.event.type.icon}}" class="event-image" th:width="${buttonSize / 2}" th:height="${buttonSize / 2}" />
 									</button>
 								</span>
-								<span th:if="${object instanceof T(com.github.kirviq.dostuff.EventData)}" th:with="event=${object}">
+								<span th:if="${object instanceof T(com.github.kirviq.dostuff.events.EventData)}" th:with="event=${object}">
 									<button type="submit" class="do-button" name="id" th:value="${event.id}" >
 										<img th:src="@{${event.type.icon}}" class="event-image" th:width="${buttonSize}" th:height="${buttonSize}" th:style="${'border-color: ' + event.type.color + '; background-color: ' + event.type.backgroundColor}"/>
 									</button>

@@ -1,19 +1,23 @@
 package com.github.kirviq.dostuff;
 
-import com.github.kirviq.dostuff.db.EventData;
-import com.github.kirviq.dostuff.db.EventDataRepository;
-import com.github.kirviq.dostuff.db.EventGroupRepository;
-import com.github.kirviq.dostuff.db.EventType;
-import com.github.kirviq.dostuff.db.EventTypeRepository;
-import com.github.kirviq.dostuff.db.HealthData;
-import com.github.kirviq.dostuff.db.HealthDataRepository;
-import com.github.kirviq.dostuff.db.TypeGroup;
+import com.github.kirviq.dostuff.events.EventData;
+import com.github.kirviq.dostuff.events.EventDataRepository;
+import com.github.kirviq.dostuff.events.EventGroupRepository;
+import com.github.kirviq.dostuff.events.EventType;
+import com.github.kirviq.dostuff.events.EventTypeRepository;
+import com.github.kirviq.dostuff.goals.GoalRepository;
+import com.github.kirviq.dostuff.healthData.HealthData;
+import com.github.kirviq.dostuff.healthData.HealthDataRepository;
+import com.github.kirviq.dostuff.events.EventTypeGroup;
+import com.github.kirviq.dostuff.goals.Day;
+import com.github.kirviq.dostuff.goals.Week;
+import com.github.kirviq.dostuff.goals.WeekJudgement;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.Value;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,6 +39,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 
 @Controller
 @RequiredArgsConstructor
@@ -45,6 +50,7 @@ public class IndexController {
 	private final EventDataRepository events;
 	private final EventTypeRepository types;
 	private final EventGroupRepository groups;
+	private final GoalRepository goals;
 	private final HealthDataRepository healthData;
 
 	@Setter(onMethod = @__(@org.springframework.beans.factory.annotation.Value("${meals.max-minutes}")))
@@ -92,10 +98,64 @@ public class IndexController {
 		if (weeksPast != null) {
 			start = start.minus(weeksPast, ChronoUnit.WEEKS);
 		}
-		Map<LocalDate, Multimap<String, Object>> eventsByDayAndType = new HashMap<>();
 		Instant startOfWeek = start.atStartOfDay().toInstant(EUROPE_BERLIN.getRules().getOffset(Instant.now()));
 		Instant endOfWeek = start.plusWeeks(1).atStartOfDay().toInstant(EUROPE_BERLIN.getRules().getOffset(Instant.now()));
 		List<EventData> eventsThisWeek = events.findEventsByTimestampBetweenOrderByIdAsc(startOfWeek, endOfWeek);
+		Map<LocalDate, Multimap<String, Object>> eventsByDayAndType = groupEventsByDay(eventsThisWeek);
+		
+		addGroups(model);
+		
+		List<Day> days = addDays(model, start, eventsByDayAndType);
+		
+		addWeek(model, days);
+		
+		addToday(model);
+		
+		return "index";
+	}
+	
+	private void addToday(Model model) {
+		model.addAttribute("today", LocalDate.now(EUROPE_BERLIN));
+	}
+	
+	private void addWeek(Model model, List<Day> days) {
+		LocalDate start = days.get(0).getDate();
+		
+		Week week = new Week(start.get(WEEK_FIELDS.weekOfYear()), start, start.plusDays(6), days);
+		
+		List<WeekJudgement> judgements = goals.findGoalsInRange(week.getStart(), week.getEnd()).stream()
+				.map(g -> g.judge(week))
+				.collect(Collectors.toList());
+		week.setJudgements(judgements);
+		
+		model.addAttribute("week", week);
+	}
+	
+	private List<Day> addDays(Model model, LocalDate start, Map<LocalDate, Multimap<String, Object>> eventsByDayAndType) {
+		Map<LocalDate, HealthData> healthDataThisWeek = healthData.findHealthDataByDateBetween(start, start.plusDays(6)).stream()
+				.collect(Collectors.toMap(HealthData::getDate, Function.identity()));
+		List<Day> days = IntStream.of(0, 1, 2, 3, 4, 5, 6)
+				.mapToObj(start::plusDays)
+				.map(date -> new Day(
+						date,
+						healthDataThisWeek.get(date),
+						eventsByDayAndType.computeIfAbsent(date, ignored -> HashMultimap.create()).asMap()
+				))
+				.collect(Collectors.toList());
+		model.addAttribute("days", days);
+		return days;
+	}
+	
+	private void addGroups(Model model) {
+		List<EventTypeGroup> eventGroups = StreamSupport.stream(types.findAll().spliterator(), false)
+				.map(EventType::getGroup).distinct()
+				.sorted(Comparator.comparingInt(group -> group.getTypes().get(0).getOrder()))
+				.collect(Collectors.toList());
+		model.addAttribute("groups", eventGroups);
+	}
+	
+	private Map<LocalDate, Multimap<String, Object>> groupEventsByDay(List<EventData> eventsThisWeek) {
+		Map<LocalDate, Multimap<String, Object>> eventsByDayAndType = new HashMap<>();
 		for (EventData event : eventsThisWeek) {
 			LocalDate localDateOfEvent = event.getTimestamp().atZone(EUROPE_BERLIN).toLocalDate();
 			Multimap<String, Object> eventsAtThatDay = eventsByDayAndType.computeIfAbsent(localDateOfEvent, day -> LinkedHashMultimap.create());
@@ -127,41 +187,7 @@ public class IndexController {
 			}
 			eventsAtThatDay.put(group, event);
 		}
-		List<TypeGroup> eventGroups = Streams.stream(this.groups.findAll())
-				.sorted(Comparator.comparingInt(group -> group.getTypes().get(0).getOrder()))
-				.collect(Collectors.toList());
-		model.addAttribute("groups", eventGroups);
-
-		HashMultimap<String, EventData> eventsThisWeekByType = eventsThisWeek.stream()
-				.collect(Multimaps.toMultimap(event -> Optional.ofNullable(event.getType().getCountsAs()).orElse(event.getType()).getName(), Function.identity(), HashMultimap::create));
-
-		List<EventStats> stats = eventGroups.stream()
-				.flatMap(group -> group.getTypes().stream())
-				.map(type -> new EventStats(
-						type,
-						Optional.ofNullable(eventsThisWeekByType.asMap().get(type.getName())).map(Collection::size).orElse(0)))
-				.peek(this::setStatusAndWarning)
-				.collect(Collectors.toList());
-
-		model.addAttribute("week", new Week(
-				start.get(WEEK_FIELDS.weekOfYear()),
-				start, start.plusDays(6),
-				stats));
-
-		Map<LocalDate, HealthData> healthDataThisWeek = healthData.findHealthDataByDateBetween(start, start.plusDays(6)).stream()
-				.collect(Collectors.toMap(HealthData::getDate, Function.identity()));
-		model.addAttribute("days", IntStream.of(0, 1, 2, 3, 4, 5, 6)
-				.mapToObj(start::plusDays)
-				.map(date -> new Day(
-						date,
-						healthDataThisWeek.get(date),
-						eventsByDayAndType.computeIfAbsent(date, ignored -> HashMultimap.create()).asMap()
-				))
-				.toArray());
-
-		model.addAttribute("today", LocalDate.now(EUROPE_BERLIN));
-
-		return "index";
+		return eventsByDayAndType;
 	}
 	
 	private static <T> T lastOf(Iterable<T> items) {
@@ -172,25 +198,6 @@ public class IndexController {
 		return last;
 	}
 	
-	private void setStatusAndWarning(EventStats stat) {
-		if (stat.type.getRequiredMinPerWeek() < 0 && stat.type.getDesiredMinPerWeek() < 0 && stat.type.getDesiredMaxPerWeek() < 0 && stat.type.getRequiredMaxPerWeek() < 0) {
-			stat.status = "NONE";
-		} else if (stat.type.getRequiredMinPerWeek() >= 0 && stat.count < stat.type.getRequiredMinPerWeek()) {
-			stat.status = "TROUBLE";
-			stat.setWarning("(< " + stat.type.getRequiredMinPerWeek() + ")");
-		} else if (stat.type.getDesiredMinPerWeek() >= 0&& stat.count < stat.type.getDesiredMinPerWeek()) {
-			stat.status = "WARN";
-			stat.setWarning("(< " + stat.type.getDesiredMinPerWeek() + ")");
-		} else if (stat.type.getRequiredMaxPerWeek() >= 0 && stat.count > stat.type.getRequiredMaxPerWeek()) {
-			stat.status = "TROUBLE";
-			stat.setWarning("(> " + stat.type.getRequiredMaxPerWeek() + ")");
-		} else if (stat.type.getDesiredMaxPerWeek() >= 0 && stat.count > stat.type.getDesiredMaxPerWeek()) {
-			stat.status = "WARN";
-			stat.setWarning("(> " + stat.type.getDesiredMaxPerWeek() + ")");
-		} else {
-			stat.status = "OK";
-		}
-	}
 
 	@PostMapping("/add-event")
 	public String addEvent(@RequestParam String type, @RequestParam(name = "date") String dateString) {
@@ -244,27 +251,5 @@ public class IndexController {
 		int weeksPast = LocalDate.now(EUROPE_BERLIN).get(WEEK_FIELDS.weekOfYear()) - date.get(WEEK_FIELDS.weekOfYear());
 		return "redirect:/" + (weeksPast == 0 ? "" : ("?weeksPast=" + weeksPast));
 	}
-
-	@Value
-	public static class Week {
-		int number;
-		LocalDate start;
-		LocalDate end;
-		List<EventStats> stats;
-	}
-	@Data
-	@RequiredArgsConstructor
-	public static class EventStats {
-		final EventType type;
-		final int count;
-		String status;
-		String warning;
-	}
-	@Value
-	public static class Day {
-		LocalDate date;
-		HealthData data;
-		Map<String, Collection<Object>> events;
-	}
-
+	
 }

@@ -1,4 +1,4 @@
-package com.github.kirviq.dostuff.db;
+package com.github.kirviq.dostuff.events;
 
 import lombok.Data;
 
@@ -19,7 +19,7 @@ public class EventType {
 	@JoinColumn(name = "counts_as")
 	private EventType countsAs;
 	@ManyToOne
-	private TypeGroup group;
+	private EventTypeGroup group;
 	private String icon;
 	@Column(name = "order_col")
 	private int order;

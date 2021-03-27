@@ -95,7 +95,7 @@ button {
 .events-of-week li {
 	font-size: 14px;
 }
-.events-of-week li.OK {
+.events-of-week li.GOOD {
 	color: green;
 }
 .events-of-week li.WARN {

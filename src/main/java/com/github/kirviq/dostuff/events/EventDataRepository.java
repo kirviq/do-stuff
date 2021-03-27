@@ -1,4 +1,4 @@
-package com.github.kirviq.dostuff.db;
+package com.github.kirviq.dostuff.events;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -6,8 +6,6 @@ import org.springframework.data.repository.CrudRepository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-
-import com.github.kirviq.dostuff.db.EventData;
 
 public interface EventDataRepository extends CrudRepository<EventData, Long> {
 	List<EventData> findEventsByTimestampBetweenOrderByIdAsc(Instant from, Instant to);

@@ -1,4 +1,4 @@
-package com.github.kirviq.dostuff.db;
+package com.github.kirviq.dostuff.events;
 
 import lombok.Data;
 
@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "type_groups")
 @Data
-public class TypeGroup {
+public class EventTypeGroup {
 	@Id
 	private String name;
 
