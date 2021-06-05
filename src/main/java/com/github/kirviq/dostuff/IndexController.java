@@ -17,12 +17,14 @@ import com.google.common.collect.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -41,8 +43,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
+@Slf4j
 @Controller
-@RequiredArgsConstructor
 public class IndexController {
 	private static final ZoneId EUROPE_BERLIN = ZoneId.of("Europe/Berlin");
 	private static final WeekFields WEEK_FIELDS = WeekFields.of(Locale.GERMANY);
@@ -57,7 +59,16 @@ public class IndexController {
 	private int mealMinutes;
 	@Setter(onMethod = @__(@org.springframework.beans.factory.annotation.Value("${layout.button.size}")))
 	private double buttonSize;
-
+	
+	public IndexController(EventDataRepository events, EventTypeRepository types, EventGroupRepository groups, GoalRepository goals, HealthDataRepository healthData) {
+		this.events = events;
+		this.types = types;
+		this.groups = groups;
+		this.goals = goals;
+		this.healthData = healthData;
+		log.info("starting IndexController");
+	}
+	
 	@Data
 	public class EventGroup {
 		private Instant start;
