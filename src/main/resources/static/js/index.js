@@ -87,6 +87,11 @@
 		}
 		function sugarInputInputHandler(event) {
 			const input = event.target;
+			if (input.value.match(/^\d{1,2}\.\d$/)) {
+				var newVal = input.value * 18.02;
+				input.value = Math.round(newVal * 10) / 10;
+				document.getElementById(input.getAttribute('id').replace(/sugar/, 'bpsys')).focus();
+			}
 			if (input.value.match(/^\d{3}$/)) {
 				document.getElementById(input.getAttribute('id').replace(/sugar/, 'bpsys')).focus();
 			}
